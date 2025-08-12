@@ -1,5 +1,5 @@
 import flet as ft
-from config import APP_TITLE, get_palette
+from config import APP_TITLE
 
 def create_navbar(page: ft.Page) -> ft.AppBar:
     def change_route(e: ft.ControlEvent):
@@ -7,24 +7,20 @@ def create_navbar(page: ft.Page) -> ft.AppBar:
         if route:
             page.go(route)
 
-    palette = get_palette(page.theme_mode)
-
+    # Rely on theme for colors (title defaults to onSurface, AppBar bg to surface)
     return ft.AppBar(
-        title=ft.Text(APP_TITLE, color=palette["on_background"]),
+        title=ft.Text(APP_TITLE),
         center_title=False,
-        bgcolor=palette["surface"],
         actions=[
             ft.TextButton(
                 "Home",
                 data="/home",
                 on_click=change_route,
-                style=ft.ButtonStyle(color=palette["primary"]),
             ),
             ft.TextButton(
                 "Settings",
                 data="/settings",
                 on_click=change_route,
-                style=ft.ButtonStyle(color=palette["primary"]),
             ),
         ],
     )
