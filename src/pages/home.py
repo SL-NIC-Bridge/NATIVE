@@ -1,12 +1,10 @@
 import flet as ft
-from components.navbar import create_navbar
 
 
-def home_view(page: ft.Page) -> ft.View:
+def home_body(page: ft.Page) -> ft.Control:
+    """Return Home page content control (doc-aligned body container pattern)."""
     primary_btn = ft.ElevatedButton("Primary Action")
-
     secondary_btn = ft.OutlinedButton("Secondary")
-
     card = ft.Card(
         content=ft.Container(
             padding=16,
@@ -20,25 +18,18 @@ def home_view(page: ft.Page) -> ft.View:
             ),
         )
     )
-
-    return ft.View(
-        route="/home",
-        appbar=create_navbar(page),
-        controls=[
-            ft.SafeArea(
-                ft.Column(
-                    [
-                        ft.Text("Home", size=28, weight=ft.FontWeight.BOLD),
-                        ft.Text("Welcome to the SL NIC Bridge app."),
-                        ft.Divider(),
-                        card,
-                        ft.Row([primary_btn, secondary_btn], spacing=10),
-                    ],
-                    expand=True,
-                    alignment=ft.MainAxisAlignment.START,
-                    horizontal_alignment=ft.CrossAxisAlignment.START,
-                ),
-                expand=True,
-            )
-        ],
+    return ft.SafeArea(
+        ft.Column(
+            [
+                ft.Text("Home", size=28, weight=ft.FontWeight.BOLD),
+                ft.Text("Welcome to the SL NIC Bridge app."),
+                ft.Divider(),
+                card,
+                ft.Row([primary_btn, secondary_btn], spacing=10),
+            ],
+            expand=True,
+            alignment=ft.MainAxisAlignment.START,
+            horizontal_alignment=ft.CrossAxisAlignment.START,
+        ),
+        expand=True,
     )

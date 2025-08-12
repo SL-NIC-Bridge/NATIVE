@@ -44,5 +44,7 @@ def apply_theme(page: ft.Page) -> None:
         color_scheme_seed=BRIGHT_ORANGE,
         use_material3=True,
     )
+    # Enable adaptive UI (platform-specific look & feel for controls)
+    page.adaptive = True
     # Let Flet compute background/surfaces by theme; keep common defaults
     page.scroll = ft.ScrollMode.AUTO
