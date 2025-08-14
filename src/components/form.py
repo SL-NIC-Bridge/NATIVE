@@ -431,19 +431,9 @@ class FormBuilder:
             spacing=10
         )
         
-        # Progress indicator
-        progress_text = ft.Text(
-            f"Step {current_step + 1} of {len(self.config['sections'])}",
-            size=14,
-            color=ft.Colors.GREY_600,
-            text_align=ft.TextAlign.CENTER
-        )
-        
         # Create form content
         content_controls = [
             step_indicator_row,
-            progress_text,
-            ft.Divider(height=20, thickness=1),
         ]
         
         # Add section title and description
