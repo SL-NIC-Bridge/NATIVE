@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 # Application configuration
 APP_TITLE: str = "SL NIC Bridge"
@@ -27,3 +27,31 @@ DARK_PALETTE: Dict[str, str] = {
     "on_primary": "#000000",
     "on_background": "#FFFFFF",
 }
+
+# Route configurations
+ROUTES = [
+    {
+        "path": "/home",
+        "title": "Home",
+        "icon": "home_outlined",
+        "selected_icon": "home",
+        "label": "Home",
+        "index": 0
+    },
+    {
+        "path": "/application",
+        "title": "Application",
+        "icon": "apps_outlined",
+        "selected_icon": "apps",
+        "label": "Application",
+        "index": 1
+    },
+    {
+        "path": "/settings",
+        "title": "Settings",
+        "icon": "settings_outlined",
+        "selected_icon": "settings",
+        "label": "Settings",
+        "index": 2
+    }
+]
