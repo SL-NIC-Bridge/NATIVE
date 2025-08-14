@@ -1,4 +1,5 @@
-from typing import Dict, List
+from typing import Dict, List, Any, Callable
+from models.forms import FormConfig, FormSection, FormField, FormFieldValidation
 
 # Application configuration
 APP_TITLE: str = "SL NIC Bridge"
@@ -41,8 +42,8 @@ ROUTES = [
     {
         "path": "/application",
         "title": "Application",
-        "icon": "apps_outlined",
-        "selected_icon": "apps",
+        "icon": "DESCRIPTION_OUTLINED",
+        "selected_icon": "DESCRIPTION",
         "label": "Application",
         "index": 1
     },
@@ -55,3 +56,100 @@ ROUTES = [
         "index": 2
     }
 ]
+
+# Example form configuration
+EXAMPLE_FORM_CONFIG: FormConfig = {
+    'id': 'example_form',
+    'title': 'Example Multi-Step Form',
+    'description': 'This is an example of a multi-step form with validation and file uploads',
+    'sections': [
+        {
+            'key': 'personal_info',
+            'title': 'Personal Information',
+            'description': 'Please provide your personal details',
+            'fields': [
+                {
+                    'key': 'full_name',
+                    'label': 'Full Name',
+                    'field_type': 'text',
+                    'placeholder': 'John Doe',
+                    'required': True,
+                    'disabled': False,
+                    'validation': {
+                        'required': True,
+                        'min_length': 3,
+                        'max_length': 100
+                    }
+                },
+                {
+                    'key': 'email',
+                    'label': 'Email Address',
+                    'field_type': 'email',
+                    'placeholder': 'john@example.com',
+                    'required': True,
+                    'validation': {
+                        'required': True,
+                        'pattern': r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                        'message': 'Please enter a valid email address'
+                    }
+                },
+                {
+                    'key': 'phone',
+                    'label': 'Phone Number',
+                    'field_type': 'text',
+                    'placeholder': '+1 (555) 123-4567',
+                    'required': False,
+                    'validation': {
+                        'pattern': r'^\+?[\d\s-]+$',
+                        'message': 'Please enter a valid phone number'
+                    }
+                }
+            ]
+        },
+        {
+            'key': 'documents',
+            'title': 'Documents',
+            'description': 'Upload the required documents',
+            'fields': [
+                {
+                    'key': 'id_proof',
+                    'label': 'ID Proof (PDF, JPG, PNG)',
+                    'field_type': 'file',
+                    'required': True,
+                    'file_extensions': ['pdf', 'jpg', 'jpeg', 'png'],
+                    'multiple_files': False,
+                    'validation': {
+                        'required': True
+                    }
+                },
+                {
+                    'key': 'additional_docs',
+                    'label': 'Additional Documents (Optional)',
+                    'field_type': 'file',
+                    'required': False,
+                    'file_extensions': ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
+                    'multiple_files': True
+                }
+            ]
+        },
+        {
+            'key': 'review',
+            'title': 'Review and Submit',
+            'description': 'Please review your information before submitting',
+            'fields': [
+                {
+                    'key': 'terms_agreement',
+                    'label': 'I agree to the terms and conditions',
+                    'field_type': 'checkbox',
+                    'required': True,
+                    'validation': {
+                        'required': True,
+                        'message': 'You must agree to the terms and conditions'
+                    }
+                }
+            ]
+        }
+    ],
+    'submit_text': 'Submit Application',
+    'cancel_text': 'Cancel',
+}
