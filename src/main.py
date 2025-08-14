@@ -3,8 +3,8 @@ import flet as ft
 from components.navbar import create_navbar, create_bottom_nav
 from pages.home import home_body
 from pages.settings import settings_body
-from config import APP_TITLE, apply_theme
-
+from utils.theme_utils import apply_theme
+from config import APP_TITLE
 
 def main(page: ft.Page):
     page.title = APP_TITLE

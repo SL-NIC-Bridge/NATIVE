@@ -1,6 +1,5 @@
 import flet as ft
-from config import apply_theme
-
+from utils.theme_utils import apply_theme
 
 def settings_body(page: ft.Page) -> ft.Control:
     """Return Settings page content control (doc-aligned body container pattern)."""
