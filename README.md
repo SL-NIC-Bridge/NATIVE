@@ -1,8 +1,11 @@
 # NATIVE
 native application
 
+# Instructions to setup
+`pip install uv`
+`uv sync`
+
 # Instructions to run
-`python -m venv venv`  
-`venv\Scripts\activate`  
-`pip install -r requirements.txt`  
-`flet run`
+`uv run flet run`
+or
+`uv run flet run --android`
