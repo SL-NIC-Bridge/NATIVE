@@ -274,34 +274,45 @@ class FormBuilder:
         self.page.update()
     
     def _build_step_header(self, current_section: FormSection) -> ft.Control:
-        """Build step indicator and title."""
-        current_step_num = self.state['current_step'] + 1
-        total_steps = len(self.config['sections'])
-        
+        """Render centered step indicators (numbers). Completed steps show a check."""
+        current_index = self.state['current_step']
+        sections = self.config.get('sections', [])
+        total_steps = len(sections)
+
+        indicators: list[ft.Control] = []
+        for i in range(total_steps):
+            # Completed
+            if i < current_index:
+                avatar = ft.CircleAvatar(
+                    content=ft.Icon(ft.Icons.CHECK, size=16, color=ft.Colors.WHITE),
+                    bgcolor=ft.Colors.GREEN, 
+                    radius=16,
+                    tooltip=sections[i].get('title', '') if isinstance(sections[i], dict) else ''
+                )
+            # Current
+            elif i == current_index:
+                avatar = ft.CircleAvatar(
+                    content=ft.Text(str(i + 1), size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+                    bgcolor=ft.Colors.BLUE,
+                    radius=16,
+                    tooltip=sections[i].get('title', '') if isinstance(sections[i], dict) else ''
+                )
+            # Pending
+            else:
+                avatar = ft.CircleAvatar(
+                    content=ft.Text(str(i + 1), size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                    bgcolor=ft.Colors.GREY_300,
+                    radius=16,
+                    tooltip=sections[i].get('title', '') if isinstance(sections[i], dict) else ''
+                )
+
+            indicators.append(avatar)
+            # Add spacing between avatars
+            if i < total_steps - 1:
+                indicators.append(ft.Container(width=12))
+
         return ft.Container(
-            content=ft.Column([
-                ft.Row([
-                    ft.CircleAvatar(
-                        content=ft.Text(str(current_step_num), 
-                                       size=14, 
-                                       weight=ft.FontWeight.BOLD),
-                        bgcolor=ft.Colors.BLUE,
-                        color=ft.Colors.WHITE,
-                        radius=16
-                    ),
-                    ft.Column([
-                        ft.Text(f"Step {current_step_num} of {total_steps}", 
-                               size=16, 
-                               weight=ft.FontWeight.BOLD),
-                        ft.Text(current_section['title'], 
-                               size=12, 
-                               color=ft.Colors.GREY_600)
-                    ], tight=True, spacing=2)
-                ], spacing=12),
-                ft.Text(current_section['title'], 
-                       size=20, 
-                       weight=ft.FontWeight.BOLD)
-            ], spacing=10),
+            content=ft.Row(indicators, alignment=ft.MainAxisAlignment.CENTER),
             padding=ft.padding.symmetric(vertical=8)
         )
     
