@@ -176,6 +176,14 @@ class FormBuilder:
         canvas_height = field.get('canvas_height', 200)
         allow_image_upload = field.get('allow_image_upload', True)
         
+        # Store canvas dimensions in state for use in other methods
+        if 'canvas_dimensions' not in self.state:
+            self.state['canvas_dimensions'] = {}
+        self.state['canvas_dimensions'][field_key] = {
+            'width': canvas_width,
+            'height': canvas_height
+        }
+        
         # Create state for tracking drawing
         class DrawingState:
             x: float = 0
@@ -236,7 +244,8 @@ class FormBuilder:
             height=canvas_height,
             border=ft.border.all(1, "black"),
             border_radius=5,
-            clip_behavior=ft.ClipBehavior.HARD_EDGE
+            clip_behavior=ft.ClipBehavior.HARD_EDGE,
+            visible=True  # Initially visible
         )
         
         # Create clear button
@@ -248,9 +257,57 @@ class FormBuilder:
         # Create container for signature controls
         signature_container = ft.Column([
             ft.Text(field.get('label', ''), weight=ft.FontWeight.BOLD),
-            canvas_container,
-            clear_button,
         ])
+        
+        # Create file display container (initially hidden)
+        file_display = ft.Column(visible=False)
+        
+        # Create file upload container (initially hidden)
+        file_upload_container = ft.Container(
+            width=canvas_width,
+            height=canvas_height,
+            border=ft.border.all(1, "black"),
+            border_radius=5,
+            clip_behavior=ft.ClipBehavior.HARD_EDGE,
+            content=ft.Column([
+                ft.Container(
+                    content=ft.Icon(ft.Icons.UPLOAD_FILE, size=40, color="#AAAAAA"),
+                    alignment=ft.alignment.center,
+                    expand=True
+                ),
+                ft.Text("Drag and drop or click to upload", color="#AAAAAA", text_align=ft.TextAlign.CENTER),
+            ], alignment=ft.MainAxisAlignment.CENTER),
+            visible=False  # Initially hidden
+        )
+        
+        # Create tabs for switching between draw and upload
+        tabs = ft.Tabs(
+            selected_index=0,
+            on_change=lambda e, key=field_key, cc=canvas_container, fc=file_upload_container: 
+                self._switch_signature_mode(key, e.control.selected_index, cc, fc),
+            tabs=[
+                ft.Tab(text="Draw", icon=ft.Icons.EDIT),
+                ft.Tab(text="Upload", icon=ft.Icons.UPLOAD_FILE),
+            ],
+        )
+        
+        # Add tabs to signature container
+        signature_container.controls.append(tabs)
+        
+        # Add content container that will hold both canvas and file upload
+        content_container = ft.Container(
+            content=ft.Stack([
+                canvas_container,
+                file_upload_container,
+            ]),
+            width=canvas_width,
+            height=canvas_height,
+        )
+        signature_container.controls.append(content_container)
+        
+        # Add clear button for drawing mode
+        draw_controls = ft.Row([clear_button], alignment=ft.MainAxisAlignment.END)
+        signature_container.controls.append(draw_controls)
         
         # Add file upload if allowed
         if allow_image_upload:
@@ -264,29 +321,22 @@ class FormBuilder:
                 self.state['file_pickers'] = {}
             self.state['file_pickers'][field_key] = file_picker
             
-            # Create file display container
-            file_display = ft.Column(visible=False)
-            
             # Store file display in form state
             if 'file_displays' not in self.state:
                 self.state['file_displays'] = {}
             self.state['file_displays'][field_key] = file_display
             
-            # Add file upload button and display to signature container
-            upload_button = ft.ElevatedButton(
-                "Upload Image",
-                icon=ft.Icons.UPLOAD_FILE,
-                on_click=lambda e, fp=file_picker: fp.pick_files(
-                    allow_multiple=False,
+            # Make file upload container clickable to open file picker
+            file_upload_container.on_click = lambda e, fp=file_picker: fp.pick_files(
+                allow_multiple=False,
                     allowed_extensions=field.get('allowed_extensions', ['jpg', 'jpeg', 'png'])
                 )
-            )
+            
             
             # Set up file picker on_result event
             file_picker.on_result = lambda e, key=field_key: self._update_signature_file_display(key, e)
             
-            # Add upload button and file display to signature container
-            signature_container.controls.append(upload_button)
+            # Add file display to signature container
             signature_container.controls.append(file_display)
         
         # Add error text
@@ -324,6 +374,40 @@ class FormBuilder:
         canvas.shapes.clear()
         self.state['values'][field_key] = ""
         self.page.update()
+        
+    def _switch_signature_mode(self, field_key: str, tab_index: int, canvas_container: ft.Container, file_upload_container: ft.Container):
+        """Switch between drawing and file upload modes."""
+        # Get file display container
+        file_display = self.state['file_displays'].get(field_key) if 'file_displays' in self.state else None
+        
+        # Check if we have an uploaded file
+        has_uploaded_file = file_display and file_display.visible and len(file_display.controls) > 0
+        
+        if tab_index == 0:  # Draw mode
+            # Show canvas container
+            canvas_container.visible = True
+            # Hide file upload container
+            file_upload_container.visible = False
+            # Hide file display if any
+            if file_display:
+                file_display.visible = False
+        else:  # Upload mode
+            # Hide canvas container
+            canvas_container.visible = False
+            
+            if has_uploaded_file:
+                # If we have an uploaded file, show the file display
+                file_display.visible = True
+                # Hide file upload container
+                file_upload_container.visible = False
+            else:
+                # If no uploaded file, show the file upload container
+                file_upload_container.visible = True
+                # Hide file display
+                if file_display:
+                    file_display.visible = False
+        
+        self.page.update()
     
     def _update_signature_file_display(self, field_key: str, e: ft.FilePickerResultEvent):
         """Update the signature file display when a file is selected."""
@@ -331,6 +415,11 @@ class FormBuilder:
         file_display = self.state['file_displays'].get(field_key)
         if not file_display:
             return
+            
+        # Get canvas dimensions from state
+        canvas_dimensions = self.state.get('canvas_dimensions', {}).get(field_key, {'width': 400, 'height': 200})
+        canvas_width = canvas_dimensions['width']
+        canvas_height = canvas_dimensions['height']
             
         # Clear previous file display
         file_display.controls.clear()
@@ -342,15 +431,43 @@ class FormBuilder:
             # Store file path in form state
             self.state['values'][field_key] = file_info.path
             
-            # Create file display
+            # Find the file upload container to hide it and show the preview instead
+            for field_container in self.controls:
+                if isinstance(field_container, ft.Container) and field_container.content:
+                    if hasattr(field_container.content, 'key') and field_container.content.key == field_key:
+                        # This is our field container
+                        for control in field_container.content.controls:
+                            if isinstance(control, ft.Container) and hasattr(control, 'content') and isinstance(control.content, ft.Stack):
+                                # This is our stack container with canvas and file upload
+                                for stack_item in control.content.controls:
+                                    if hasattr(stack_item, 'visible') and not isinstance(stack_item, cv.Canvas):
+                                        # This is our file upload container, hide it
+                                        stack_item.visible = False
+            
+            # Create file display with preview and delete button
             file_display.controls.append(
-                ft.Row([
-                    ft.Icon(ft.Icons.IMAGE),
-                    ft.Text(file_info.name),
-                    ft.IconButton(
-                        icon=ft.Icons.DELETE,
-                        on_click=lambda e, key=field_key: self._remove_signature_file(key)
-                    )
+                ft.Column([
+                    ft.Container(
+                        content=ft.Image(
+                            src=file_info.path,
+                            width=canvas_width,
+                            height=canvas_height,
+                            fit=ft.ImageFit.CONTAIN,
+                        ),
+                        width=canvas_width,
+                        height=canvas_height,
+                        border=ft.border.all(1, "black"),
+                        border_radius=5,
+                        padding=10,
+                        clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                    ),
+                    ft.Row([
+                        ft.Text(file_info.name, expand=True),
+                        ft.IconButton(
+                            icon=ft.Icons.DELETE,
+                            on_click=lambda e, key=field_key: self._remove_signature_file(key)
+                        )
+                    ])
                 ])
             )
             file_display.visible = True
@@ -362,6 +479,19 @@ class FormBuilder:
             file_display.visible = False
             # Clear form state
             self.state['values'][field_key] = ""
+            
+            # Find the file upload container to show it again
+            for field_container in self.controls:
+                if isinstance(field_container, ft.Container) and field_container.content:
+                    if hasattr(field_container.content, 'key') and field_container.content.key == field_key:
+                        # This is our field container
+                        for control in field_container.content.controls:
+                            if isinstance(control, ft.Container) and hasattr(control, 'content') and isinstance(control.content, ft.Stack):
+                                # This is our stack container with canvas and file upload
+                                for stack_item in control.content.controls:
+                                    if hasattr(stack_item, 'visible') and not isinstance(stack_item, cv.Canvas):
+                                        # This is our file upload container, show it
+                                        stack_item.visible = True
             
         self.page.update()
         
@@ -378,6 +508,19 @@ class FormBuilder:
         
         # Clear form state
         self.state['values'][field_key] = ""
+        
+        # Switch back to upload mode view (empty state)
+        # Find the tabs in the parent container
+        for field_container in self.controls:
+            if isinstance(field_container, ft.Container) and field_container.content:
+                if hasattr(field_container.content, 'key') and field_container.content.key == field_key:
+                    # This is our field container
+                    for control in field_container.content.controls:
+                        if isinstance(control, ft.Tabs):
+                            # Set to upload tab if we're already there
+                            if control.selected_index == 1:
+                                # Update the UI to show empty upload state
+                                self.page.update()
         
         self.page.update()
     
