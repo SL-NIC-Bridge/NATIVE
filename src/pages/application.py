@@ -21,7 +21,7 @@ def application_body(page: ft.Page) -> ft.Control:
     )
     
     # Build the form UI
-    form_ui = form.build()
+    form_ui = form.get_form_container()
     
     # Create a scrollable column for the form
     form_content = ft.Column(
