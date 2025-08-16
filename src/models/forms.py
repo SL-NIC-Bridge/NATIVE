@@ -13,7 +13,7 @@ class FormField(TypedDict):
     """Definition of a single form field."""
     key: str
     label: str
-    field_type: Literal["text", "email", "password", "number", "date", "file", "select", "multiselect", "checkbox"]
+    field_type: Literal["text", "email", "password", "number", "date", "file", "select", "multiselect", "checkbox", "signature"]
     placeholder: Optional[str]
     default_value: Any
     required: bool
@@ -22,6 +22,9 @@ class FormField(TypedDict):
     validation: Optional[FormFieldValidation]
     file_extensions: Optional[List[str]]  # For file uploads
     multiple_files: Optional[bool]  # For file uploads
+    canvas_width: Optional[int]  # For signature
+    canvas_height: Optional[int]  # For signature
+    allow_image_upload: Optional[bool]  # For signature
 
 class FormSection(TypedDict):
     """A section/step in the multi-step form."""

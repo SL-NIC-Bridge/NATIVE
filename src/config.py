@@ -146,7 +146,20 @@ EXAMPLE_FORM_CONFIG: FormConfig = {
                         'required': True,
                         'message': 'You must agree to the terms and conditions'
                     }
-                }
+                },
+                {
+                    'key': 'signature',
+                    'label': 'Signature',
+                    'field_type': 'signature',
+                    'required': True,
+                    'canvas_width': 400,
+                    'canvas_height': 200,
+                    'allow_image_upload': True,
+                    'file_extensions': ['jpg', 'jpeg', 'png', 'gif'],
+                    'validation': {
+                        'required': True
+                    }
+                },
             ]
         }
     ],

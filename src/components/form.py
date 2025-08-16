@@ -1,4 +1,5 @@
 import flet as ft
+import flet.canvas as cv
 import time
 from typing import Dict, List, Any, Optional, Callable
 from flet import Page
@@ -74,6 +75,8 @@ class FormBuilder:
         
         if field['field_type'] == 'file':
             return self._create_file_upload(field)
+        elif field['field_type'] == 'signature':
+            return self._create_signature_field(field)
         
         # Common properties for input fields
         input_field = ft.TextField(
@@ -165,6 +168,218 @@ class FormBuilder:
             ],
             spacing=10
         )
+    
+    def _create_signature_field(self, field: FormField) -> ft.Control:
+        """Create a signature field with canvas drawing and optional image upload."""
+        field_key = field['key']
+        canvas_width = field.get('canvas_width', 400)
+        canvas_height = field.get('canvas_height', 200)
+        allow_image_upload = field.get('allow_image_upload', True)
+        
+        # Create state for tracking drawing
+        class DrawingState:
+            x: float = 0
+            y: float = 0
+            drawing: bool = False
+            
+        drawing_state = DrawingState()
+        
+        # Define gesture handlers
+        def pan_start(e: ft.DragStartEvent):
+            # Constrain initial coordinates to canvas boundaries
+            drawing_state.x = max(0, min(e.local_x, canvas_width))
+            drawing_state.y = max(0, min(e.local_y, canvas_height))
+            drawing_state.drawing = True
+            
+        def pan_update(e: ft.DragUpdateEvent):
+            if drawing_state.drawing:
+                # Constrain coordinates to canvas boundaries
+                new_x = max(0, min(e.local_x, canvas_width))
+                new_y = max(0, min(e.local_y, canvas_height))
+                
+                # Add a line from previous position to current position
+                canvas.shapes.append(
+                    cv.Line(
+                        drawing_state.x, drawing_state.y, 
+                        new_x, new_y, 
+                        paint=ft.Paint(stroke_width=3, color="black")
+                    )
+                )
+                # Update position
+                drawing_state.x = new_x
+                drawing_state.y = new_y
+                # Mark as drawn
+                self._handle_signature_change(field_key, canvas)
+                # Request page update instead of direct canvas update
+                self.page.update()
+                
+        def pan_end(e: ft.DragEndEvent):
+            drawing_state.drawing = False
+        
+        # Create canvas for drawing with gesture detector
+        canvas = cv.Canvas(
+            width=canvas_width,
+            height=canvas_height,
+            shapes=[],
+            content=ft.GestureDetector(
+                on_pan_start=pan_start,
+                on_pan_update=pan_update,
+                on_pan_end=pan_end,
+                drag_interval=10,
+            )
+        )
+        
+        # Create a container with border to constrain the signature area
+        canvas_container = ft.Container(
+            content=canvas,
+            width=canvas_width,
+            height=canvas_height,
+            border=ft.border.all(1, "black"),
+            border_radius=5,
+            clip_behavior=ft.ClipBehavior.HARD_EDGE
+        )
+        
+        # Create clear button
+        clear_button = ft.ElevatedButton(
+            "Clear",
+            on_click=lambda e, key=field_key, c=canvas: self._clear_signature(key, c)
+        )
+        
+        # Create container for signature controls
+        signature_container = ft.Column([
+            ft.Text(field.get('label', ''), weight=ft.FontWeight.BOLD),
+            canvas_container,
+            clear_button,
+        ])
+        
+        # Add file upload if allowed
+        if allow_image_upload:
+            # Create file picker for signature image upload
+            file_picker = ft.FilePicker()
+            self.page.overlay.append(file_picker)
+            self.page.update()
+            
+            # Store file picker in form state
+            if 'file_pickers' not in self.state:
+                self.state['file_pickers'] = {}
+            self.state['file_pickers'][field_key] = file_picker
+            
+            # Create file display container
+            file_display = ft.Column(visible=False)
+            
+            # Store file display in form state
+            if 'file_displays' not in self.state:
+                self.state['file_displays'] = {}
+            self.state['file_displays'][field_key] = file_display
+            
+            # Add file upload button and display to signature container
+            upload_button = ft.ElevatedButton(
+                "Upload Image",
+                icon=ft.Icons.UPLOAD_FILE,
+                on_click=lambda e, fp=file_picker: fp.pick_files(
+                    allow_multiple=False,
+                    allowed_extensions=field.get('allowed_extensions', ['jpg', 'jpeg', 'png'])
+                )
+            )
+            
+            # Set up file picker on_result event
+            file_picker.on_result = lambda e, key=field_key: self._update_signature_file_display(key, e)
+            
+            # Add upload button and file display to signature container
+            signature_container.controls.append(upload_button)
+            signature_container.controls.append(file_display)
+        
+        # Add error text
+        error_text = ft.Text(
+            visible=False,
+            color="red",
+            size=12
+        )
+        
+        # Store error text in form state
+        if 'error_texts' not in self.state:
+            self.state['error_texts'] = {}
+        self.state['error_texts'][field_key] = error_text
+        
+        # Add error text to signature container
+        signature_container.controls.append(error_text)
+        
+        return signature_container
+    
+    def _handle_signature_change(self, field_key: str, canvas: cv.Canvas):
+        """Handle signature change from canvas drawing."""
+        # Store the signature status in the form state
+        self.state['values'][field_key] = "signature_drawn"
+        
+        # Clear error when user starts drawing
+        if field_key in self.state['errors']:
+            del self.state['errors'][field_key]
+            self._update_field_error(field_key)
+        
+        self.page.update()
+    
+    def _clear_signature(self, field_key: str, canvas: cv.Canvas):
+        """Clear the signature canvas."""
+        # Clear the canvas by removing all shapes
+        canvas.shapes.clear()
+        self.state['values'][field_key] = ""
+        self.page.update()
+    
+    def _update_signature_file_display(self, field_key: str, e: ft.FilePickerResultEvent):
+        """Update the signature file display when a file is selected."""
+        # Get file display container
+        file_display = self.state['file_displays'].get(field_key)
+        if not file_display:
+            return
+            
+        # Clear previous file display
+        file_display.controls.clear()
+        
+        if e.files and len(e.files) > 0:
+            # Get selected file
+            file_info = e.files[0]
+            
+            # Store file path in form state
+            self.state['values'][field_key] = file_info.path
+            
+            # Create file display
+            file_display.controls.append(
+                ft.Row([
+                    ft.Icon(ft.Icons.IMAGE),
+                    ft.Text(file_info.name),
+                    ft.IconButton(
+                        icon=ft.Icons.DELETE,
+                        on_click=lambda e, key=field_key: self._remove_signature_file(key)
+                    )
+                ])
+            )
+            file_display.visible = True
+            
+            # Clear any errors
+            if 'error_texts' in self.state and field_key in self.state['error_texts']:
+                self.state['error_texts'][field_key].visible = False
+        else:
+            file_display.visible = False
+            # Clear form state
+            self.state['values'][field_key] = ""
+            
+        self.page.update()
+        
+    def _remove_signature_file(self, field_key: str):
+        """Remove the signature file."""
+        # Get file display container
+        file_display = self.state['file_displays'].get(field_key)
+        if not file_display:
+            return
+            
+        # Clear file display
+        file_display.controls.clear()
+        file_display.visible = False
+        
+        # Clear form state
+        self.state['values'][field_key] = ""
+        
+        self.page.update()
     
     def _update_file_list_display(self, field_key: str):
         """Update the file list display for a file upload field."""

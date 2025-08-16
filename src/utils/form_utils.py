@@ -62,6 +62,26 @@ def validate_field(
                     if ext not in field['file_extensions']:
                         return f"File type not allowed. Allowed types: {', '.join(field['file_extensions'])}"
     
+    # Signature validations
+    if field['field_type'] == 'signature':
+        # For signature fields, we check if there's a value (canvas data) or a file
+        has_signature = bool(value) if isinstance(value, str) else False
+        has_signature_file = False
+        
+        if files and field['key'] in files and files[field['key']]:
+            has_signature_file = True
+            
+        if field.get('required') and not (has_signature or has_signature_file):
+            return f"{field['label']} is required"
+            
+        # If there's a file, check extensions if specified
+        if has_signature_file and 'file_extensions' in field:
+            for file_info in files[field['key']]:
+                if 'name' in file_info:
+                    ext = file_info['name'].split('.')[-1].lower()
+                    if ext not in field['file_extensions']:
+                        return f"Image type not allowed. Allowed types: {', '.join(field['file_extensions'])}"
+    
     # Custom validation function
     if 'custom_validator' in validation and callable(validation['custom_validator']):
         custom_error = validation['custom_validator'](value)
