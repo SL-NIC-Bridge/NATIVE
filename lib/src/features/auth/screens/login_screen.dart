@@ -67,7 +67,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 const SizedBox(height: 48),
                 Icon(
-                  Icons.account_balance_wallet,
+                  Icons.credit_card_sharp,
                   size: 80,
                   color: Theme.of(context).colorScheme.primary,
                 ),

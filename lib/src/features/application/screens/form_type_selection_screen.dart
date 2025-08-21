@@ -130,7 +130,7 @@ class FormTypeSelectionScreen extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Card(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+        color: Theme.of(context).colorScheme.surfaceBright,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
@@ -144,7 +144,7 @@ class FormTypeSelectionScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
