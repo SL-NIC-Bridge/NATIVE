@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/NATIVE.iml" filepath="$PROJECT_DIR$/.idea/NATIVE.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sl_nic_bridge.iml" filepath="$PROJECT_DIR$/sl_nic_bridge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/sl_nic_bridge_android.iml" filepath="$PROJECT_DIR$/android/sl_nic_bridge_android.iml" />
     </modules>
   </component>
 </project>
