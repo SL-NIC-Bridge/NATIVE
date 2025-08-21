@@ -22,7 +22,7 @@ Map<String, dynamic> _$ValidationRuleToJson(ValidationRule instance) =>
 
 FormField _$FormFieldFromJson(Map<String, dynamic> json) => FormField(
   fieldId: json['fieldId'] as String,
-  type: json['type'] as String,
+  type: FormField._fieldTypeFromJson(json['type'] as String),
   label: json['label'] as String,
   placeholder: json['placeholder'] as String,
   required: json['required'] as bool,
@@ -34,7 +34,7 @@ FormField _$FormFieldFromJson(Map<String, dynamic> json) => FormField(
 
 Map<String, dynamic> _$FormFieldToJson(FormField instance) => <String, dynamic>{
   'fieldId': instance.fieldId,
-  'type': instance.type,
+  'type': FormField._fieldTypeToJson(instance.type),
   'label': instance.label,
   'placeholder': instance.placeholder,
   'required': instance.required,
@@ -45,7 +45,7 @@ Map<String, dynamic> _$FormFieldToJson(FormField instance) => <String, dynamic>{
 FormFieldVariation _$FormFieldVariationFromJson(Map<String, dynamic> json) =>
     FormFieldVariation(
       fieldId: json['fieldId'] as String,
-      type: json['type'] as String,
+      type: FormField._fieldTypeFromJson(json['type'] as String),
       label: json['label'] as String,
       placeholder: json['placeholder'] as String,
       required: json['required'] as bool,
@@ -60,7 +60,7 @@ Map<String, dynamic> _$FormFieldVariationToJson(
   FormFieldVariation instance,
 ) => <String, dynamic>{
   'fieldId': instance.fieldId,
-  'type': instance.type,
+  'type': FormField._fieldTypeToJson(instance.type),
   'label': instance.label,
   'placeholder': instance.placeholder,
   'required': instance.required,

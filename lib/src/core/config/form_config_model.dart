@@ -1,7 +1,17 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'field_type.dart';
 import 'form_config_entry.dart';
 
 part 'form_config_model.g.dart';
+
+FieldType _fieldTypeFromJson(String value) {
+  return FieldType.values.firstWhere(
+    (type) => type.name == value.toLowerCase(),
+    orElse: () => FieldType.text,
+  );
+}
+
+String _fieldTypeToJson(FieldType type) => type.name;
 
 @JsonSerializable()
 class ValidationRule {
@@ -35,8 +45,18 @@ class ValidationRule {
 @JsonSerializable()
 class FormField {
   final String fieldId;
-  final String type;
+  @JsonKey(fromJson: FormField._fieldTypeFromJson, toJson: FormField._fieldTypeToJson)
+  final FieldType type;
   final String label;
+
+  static FieldType _fieldTypeFromJson(String value) {
+    return FieldType.values.firstWhere(
+      (type) => type.name == value.toLowerCase(),
+      orElse: () => FieldType.text,
+    );
+  }
+
+  static String _fieldTypeToJson(FieldType type) => type.name;
   final String placeholder;
   final bool required;
   final Map<String, dynamic> properties;
@@ -63,7 +83,7 @@ class FormFieldVariation extends FormField {
 
   FormFieldVariation({
     required String fieldId,
-    required String type,
+    required FieldType type,
     required String label,
     required String placeholder,
     required bool required,

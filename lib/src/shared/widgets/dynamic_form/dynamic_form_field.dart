@@ -48,7 +48,7 @@ class _DynamicFormFieldState extends State<DynamicFormField> {
 
   @override
   Widget build(BuildContext context) {
-    switch (widget.config.type as FieldType) {
+    switch (widget.config.type) {
       case FieldType.text:
       case FieldType.email:
       case FieldType.phone:
@@ -388,7 +388,7 @@ class _DynamicFormFieldState extends State<DynamicFormField> {
   }
 
   TextInputType? _getKeyboardType() {
-    switch (widget.config.type as FieldType) {
+    switch (widget.config.type) {
       case FieldType.email:
         return TextInputType.emailAddress;
       case FieldType.phone:
