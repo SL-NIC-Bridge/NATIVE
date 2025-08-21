@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/theme/theme_provider.dart';
 import '../providers/settings_provider.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/loading_overlay.dart';
@@ -39,11 +40,20 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => context.go('${AppRoutes.settings}/change-password'),
             ),
             const Divider(),
-            SwitchListTile(
-              title: const Text('Dark Mode'),
-              secondary: const Icon(Icons.dark_mode),
-              value: settings.darkMode,
-              onChanged: (value) => ref.read(settingsProvider.notifier).toggleDarkMode(),
+            Builder(
+              builder: (context) {
+                final themeMode = ref.watch(themeModeProvider);
+                return SwitchListTile(
+                  title: const Text('Dark Mode'),
+                  secondary: const Icon(Icons.dark_mode),
+                  value: themeMode == ThemeMode.dark,
+                  onChanged: (value) {
+                    ref.read(themeModeProvider.notifier).setThemeMode(
+                      value ? ThemeMode.dark : ThemeMode.light,
+                    );
+                  },
+                );
+              },
             ),
             SwitchListTile(
               title: const Text('Enable Biometrics'),

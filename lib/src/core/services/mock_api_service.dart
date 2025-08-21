@@ -173,13 +173,15 @@ class MockApiService {
 
   // Helper method to simulate network delay
   Future<void> _simulateNetworkDelay() async {
-    await Future.delayed(mockDelay);
+    // await Future.delayed(mockDelay);
+    return;
   }
 
   // Helper method to simulate random failures
   Future<void> _simulateRandomFailure() async {
-    if (DateTime.now().millisecond / 1000 > successRate) {
-      throw Exception('Random network error occurred');
-    }
+    // if (DateTime.now().millisecond / 1000 > successRate) {
+    //   throw Exception('Random network error occurred');
+    // }
+    return;
   }
 }
