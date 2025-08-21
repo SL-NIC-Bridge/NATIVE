@@ -1,142 +1,148 @@
 import flet as ft
-import time
+import uuid
 from typing import Dict, Any, Callable
 
 def create_file_upload(
-    field: Dict[str, Any], 
-    field_key: str, 
-    page: ft.Page, 
+    field: Dict[str, Any],
+    field_key: str,
+    page: ft.Page,
     state: Dict[str, Any],
     handle_change_callback: Callable,
     validate_callback: Callable
 ) -> ft.Column:
-    """Create a self-contained file upload control with its own list management."""
-    
-    # Initialize file picker
-    file_picker = ft.FilePicker()
-    page.overlay.append(file_picker)
-    
-    # Create file list display
+    """
+    Create a self-contained file upload control using the correct two-step
+    "pick then upload" Flet pattern. This version correctly generates the
+    required upload_url and is reliable on all platforms.
+    """
+
+    # --- UI Components ---
+    progress_bars: Dict[str, ft.ProgressRing] = {}
+    upload_button = ft.ElevatedButton(
+        f"Select {field['label']}",
+        icon=ft.Icons.FOLDER_OPEN,
+    )
     file_list = ft.Column(spacing=8)
-    
-    def update_file_list_display():
-        """Update the file list display - internal to this component."""
-        files = state['files'].get(field_key, [])
-        
-        if not files:
-            file_list.controls = [
-                ft.Text("No files uploaded", 
-                       size=12, 
-                       color=ft.Colors.GREY_500, 
-                       italic=True)
-            ]
-        else:
-            file_list.controls = []
-            for file in files:
-                file_item = ft.Container(
-                    content=ft.Row([
-                        ft.Icon(ft.Icons.INSERT_DRIVE_FILE, size=20),
-                        ft.Column([
-                            ft.Text(file['name'], 
-                                   size=14, 
-                                   weight=ft.FontWeight.BOLD),
-                            ft.Text(f"{file.get('size', 0)} bytes", 
-                                   size=12, 
-                                   color=ft.Colors.GREY_500),
-                        ], tight=True, spacing=2),
-                        ft.IconButton(
-                            icon=ft.Icons.CLOSE,
-                            on_click=lambda e, f=file: remove_file(f),
-                            tooltip="Remove file"
-                        ),
-                    ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-                    padding=ft.padding.symmetric(vertical=4, horizontal=8),
-                    border=ft.border.all(1, ft.Colors.GREY_300),
-                    border_radius=8,
-                )
-                file_list.controls.append(file_item)
-        
-        page.update()
-    
-    def remove_file(file_to_remove: Dict[str, Any]):
-        """Remove file from the list - internal logic."""
-        files = state['files'].get(field_key, [])
-        state['files'][field_key] = [f for f in files if f['id'] != file_to_remove['id']]
-        
-        # Update form value - let FormBuilder know about the change
-        remaining_files = state['files'][field_key]
-        if remaining_files:
-            # If multiple files allowed, could pass file list or first file path
-            handle_change_callback(field_key, remaining_files[0]['path'])
-        else:
-            handle_change_callback(field_key, '')
-        
-        # Update our display
-        update_file_list_display()
-        
-        # Trigger validation
-        validate_callback(field_key)
-    
-    def handle_file_pick(e: ft.FilePickerResultEvent):
-        """Handle file selection - internal logic."""
-        if not e.files:
-            return
-            
-        if field_key not in state['files']:
-            state['files'][field_key] = []
-            
-        # Add new files
-        for file in e.files:
+    status_row = ft.Row(visible=False, controls=[ft.Text("Uploading...")])
+
+
+    # --- Step 3: Handle individual file upload completion and progress ---
+    def on_upload_progress(e: ft.FilePickerUploadEvent):
+        if e.file_name in progress_bars:
+            progress_bars[e.file_name].value = e.progress
+            progress_bars[e.file_name].update()
+
+        if e.progress and e.progress >= 1.0:
             file_info = {
-                'name': file.name,
-                'path': getattr(file, 'path', file.name),
-                'size': file.size,
-                'mime_type': getattr(file, 'mime_type', 'application/octet-stream'),
-                'id': f"{file.name}_{int(time.time())}"
+                'name': e.file_name, 'path': e.path, 'size': e.size, 'id': str(uuid.uuid4())
             }
-            
-            # Handle multiple vs single file
             if field.get('multiple', True):
                 state['files'][field_key].append(file_info)
             else:
-                state['files'][field_key] = [file_info]  # Replace existing
+                state['files'][field_key] = [file_info]
+            
+            all_done = all(p.value >= 1.0 for p in progress_bars.values())
+            if all_done:
+                on_all_uploads_complete()
+
+
+    # --- Step 2: Handle the result of the file picker and start the upload ---
+    def on_files_picked(e: ft.FilePickerResultEvent):
+        if not e.files:
+            return
+
+        if field_key not in state['files']:
+            state['files'][field_key] = []
         
-        # Notify FormBuilder of value change (generic interface)
-        files = state['files'][field_key]
-        if files:
-            # For form value, use first file path or could use file count
-            handle_change_callback(field_key, files[0]['path'])
+        progress_bars.clear()
+        status_row.controls.clear()
+        status_row.controls.append(ft.Text("Uploading...", weight=ft.FontWeight.BOLD))
         
-        # Update our display
-        update_file_list_display()
-        
-        # Trigger validation
-        validate_callback(field_key)
-    
-    # Set up file picker callback
-    file_picker.on_result = handle_file_pick
-    
-    # Create upload button
-    upload_button = ft.ElevatedButton(
-        f"Upload {field['label']}",
-        on_click=lambda _: file_picker.pick_files(
-            allow_multiple=field.get('multiple', True),
-            allowed_extensions=field.get('allowed_extensions')
-        ),
-        icon=ft.Icons.UPLOAD_FILE
+        files_to_upload = []
+        for f in e.files:
+            prog = ft.ProgressRing(width=20, height=20, stroke_width=2, value=0)
+            progress_bars[f.name] = prog
+            status_row.controls.append(
+                ft.Row([prog, ft.Text(f.name, size=12, overflow=ft.TextOverflow.ELLIPSIS, expand=True)])
+            )
+            
+            # ========================================================== #
+            # START: THIS IS THE CRITICAL FIX                            #
+            # ========================================================== #
+            # We must generate an upload URL for each file.
+            upload_url = page.get_upload_url(f.name, 600)  # URL expires in 10 minutes
+            files_to_upload.append(
+                ft.FilePickerUploadFile(
+                    f.name,
+                    upload_url=upload_url
+                )
+            )
+            # ========================================================== #
+            # END: CRITICAL FIX                                          #
+            # ========================================================== #
+
+        status_row.visible = True
+        upload_button.disabled = True
+        page.update()
+
+        file_picker.upload(files_to_upload)
+
+    # --- Step 1: Initialize the file picker and wire it up ---
+    file_picker = ft.FilePicker(on_result=on_files_picked, on_upload=on_upload_progress)
+    page.overlay.append(file_picker)
+    upload_button.on_click = lambda _: file_picker.pick_files(
+        allow_multiple=field.get('multiple', True),
+        allowed_extensions=field.get('allowed_extensions'),
+        dialog_title=f"Select {field['label']}"
     )
-    
-    # Create the main container
+
+    # --- Finalization and Helper Functions (Unchanged) ---
+    def on_all_uploads_complete():
+        status_row.visible = False
+        upload_button.disabled = False
+        current_files = state['files'][field_key]
+        if current_files:
+            handle_change_callback(field_key, current_files[0]['path'])
+        update_file_list_display()
+        validate_callback(field_key)
+        page.update()
+
+    def update_file_list_display():
+        files = state.get('files', {}).get(field_key, [])
+        if not files:
+            file_list.controls = [ft.Text("No files uploaded", size=12, color=ft.Colors.GREY_500, italic=True)]
+        else:
+            file_list.controls = [
+                ft.Container(
+                    content=ft.Row([
+                        ft.Icon(ft.Icons.INSERT_DRIVE_FILE, size=20, color=ft.Colors.BLUE_GREY),
+                        ft.Column([
+                            ft.Text(f['name'], size=14, weight=ft.FontWeight.BOLD, max_lines=1, overflow=ft.TextOverflow.ELLIPSIS),
+                            ft.Text(f"{f.get('size', 0):,} bytes", size=12, color=ft.Colors.GREY_600),
+                        ], tight=True, spacing=2, expand=True),
+                        ft.IconButton(icon=ft.Icons.CLOSE, on_click=lambda e, f=f: remove_file(f), tooltip="Remove file"),
+                    ], alignment=ft.MainAxisAlignment.START, vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                    padding=ft.padding.symmetric(vertical=6, horizontal=10), border=ft.border.all(1, ft.Colors.GREY_300), border_radius=8,
+                ) for f in files
+            ]
+        page.update()
+
+    def remove_file(file_to_remove: Dict[str, Any]):
+        files = state.get('files', {}).get(field_key, [])
+        state['files'][field_key] = [f for f in files if f['id'] != file_to_remove['id']]
+        remaining_files = state['files'][field_key]
+        handle_change_callback(field_key, remaining_files[0]['path'] if remaining_files else '')
+        update_file_list_display()
+        validate_callback(field_key)
+
+    # --- Final Layout ---
     container = ft.Column(
         controls=[
             ft.Text(field.get('label', ''), weight=ft.FontWeight.BOLD),
             ft.Row(controls=[upload_button]),
+            status_row,
             file_list
-        ],
-        spacing=10
+        ], spacing=10
     )
-    
-    # Initialize display
     update_file_list_display()
-    
     return container

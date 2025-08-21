@@ -21,7 +21,6 @@ def home_body(page: ft.Page) -> ft.Control:
     return ft.SafeArea(
         ft.Column(
             [
-                ft.Text("Home", size=28, weight=ft.FontWeight.BOLD),
                 ft.Text("Welcome to the SL NIC Bridge app."),
                 ft.Divider(),
                 card,

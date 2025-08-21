@@ -1,4 +1,5 @@
 import flet as ft
+from compat import filepicker_compat  # Ensure compatibility shim runs first
 from typing import Dict, Callable
 
 from components.navbar import create_navbar, create_bottom_nav

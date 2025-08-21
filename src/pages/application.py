@@ -1,6 +1,6 @@
 import flet as ft
 from components.form import FormBuilder
-from config import EXAMPLE_FORM_CONFIG
+from config import FORM_CONFIG
 
 def handle_form_submit(data: dict):
     """Handle form submission."""
@@ -15,7 +15,7 @@ def application_body(page: ft.Page) -> ft.Control:
     # Create the form instance
     form = FormBuilder(
         page=page,
-        config=EXAMPLE_FORM_CONFIG,
+        config=FORM_CONFIG,
         on_submit=handle_form_submit,
         on_cancel=lambda: page.go("/")  # Go to home on cancel
     )
@@ -29,7 +29,6 @@ def application_body(page: ft.Page) -> ft.Control:
             ft.Container(
                 content=ft.Column(
                     [
-                        ft.Text("Application Form", size=28, weight=ft.FontWeight.BOLD),
                         ft.Text("Please fill out the form below to submit your application.",
                               color=ft.Colors.GREY_600),
                         ft.Divider(),

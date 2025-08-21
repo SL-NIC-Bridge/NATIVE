@@ -58,54 +58,54 @@ ROUTES = [
 ]
 
 # Example form configuration
-EXAMPLE_FORM_CONFIG: FormConfig = {
+FORM_CONFIG: FormConfig = {
     'id': 'example_form',
     'title': 'Example Multi-Step Form',
     'description': 'This is an example of a multi-step form with validation and file uploads',
     'sections': [
-        {
-            'key': 'personal_info',
-            'title': 'Personal Information',
-            'description': 'Please provide your personal details',
-            'fields': [
-                {
-                    'key': 'full_name',
-                    'label': 'Full Name',
-                    'field_type': 'text',
-                    'placeholder': 'John Doe',
-                    'required': True,
-                    'disabled': False,
-                    'validation': {
-                        'required': True,
-                        'min_length': 3,
-                        'max_length': 100
-                    }
-                },
-                {
-                    'key': 'email',
-                    'label': 'Email Address',
-                    'field_type': 'email',
-                    'placeholder': 'john@example.com',
-                    'required': True,
-                    'validation': {
-                        'required': True,
-                        'pattern': r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                        'message': 'Please enter a valid email address'
-                    }
-                },
-                {
-                    'key': 'phone',
-                    'label': 'Phone Number',
-                    'field_type': 'text',
-                    'placeholder': '+1 (555) 123-4567',
-                    'required': False,
-                    'validation': {
-                        'pattern': r'^\+?[\d\s-]+$',
-                        'message': 'Please enter a valid phone number'
-                    }
-                }
-            ]
-        },
+        # {
+        #     'key': 'personal_info',
+        #     'title': 'Personal Information',
+        #     'description': 'Please provide your personal details',
+        #     'fields': [
+        #         {
+        #             'key': 'full_name',
+        #             'label': 'Full Name',
+        #             'field_type': 'text',
+        #             'placeholder': 'John Doe',
+        #             'required': True,
+        #             'disabled': False,
+        #             'validation': {
+        #                 'required': True,
+        #                 'min_length': 3,
+        #                 'max_length': 100
+        #             }
+        #         },
+        #         {
+        #             'key': 'email',
+        #             'label': 'Email Address',
+        #             'field_type': 'email',
+        #             'placeholder': 'john@example.com',
+        #             'required': True,
+        #             'validation': {
+        #                 'required': True,
+        #                 'pattern': r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+        #                 'message': 'Please enter a valid email address'
+        #             }
+        #         },
+        #         {
+        #             'key': 'phone',
+        #             'label': 'Phone Number',
+        #             'field_type': 'text',
+        #             'placeholder': '+1 (555) 123-4567',
+        #             'required': False,
+        #             'validation': {
+        #                 'pattern': r'^\+?[\d\s-]+$',
+        #                 'message': 'Please enter a valid phone number'
+        #             }
+        #         }
+        #     ]
+        # },
         {
             'key': 'documents',
             'title': 'Documents',

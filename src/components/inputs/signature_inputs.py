@@ -434,8 +434,10 @@ def create_signature_field(
         """Open file picker with validation."""
         file_picker.pick_files(
             allow_multiple=False,
-            allowed_extensions=allowed_extensions
+            allowed_extensions=allowed_extensions,
+            file_type=ft.FilePickerFileType.IMAGE
         )
+        
     
     upload_area.on_click = open_file_picker
     

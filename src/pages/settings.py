@@ -15,7 +15,7 @@ def settings_body(page: ft.Page) -> ft.Control:
     return ft.SafeArea(
         ft.Column(
             [
-                ft.Text("Settings", size=28, weight=ft.FontWeight.BOLD),
+                ft.Text("Adjust your application settings below.", color=ft.Colors.GREY_600),
                 ft.Divider(),
                 theme_switch,
             ],
