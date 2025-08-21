@@ -4,15 +4,6 @@ import 'form_config_entry.dart';
 
 part 'form_config_model.g.dart';
 
-FieldType _fieldTypeFromJson(String value) {
-  return FieldType.values.firstWhere(
-    (type) => type.name == value.toLowerCase(),
-    orElse: () => FieldType.text,
-  );
-}
-
-String _fieldTypeToJson(FieldType type) => type.name;
-
 @JsonSerializable()
 class ValidationRule {
   final String type;
