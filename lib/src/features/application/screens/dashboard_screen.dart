@@ -179,12 +179,6 @@ class DashboardScreen extends ConsumerWidget {
                 childAspectRatio: 1.2,
                 children: [
                   _QuickActionCard(
-                    icon: Icons.dynamic_form,
-                    title: 'Dynamic Form',
-                    subtitle: 'Try the new form builder',
-                    onTap: () => context.push(AppRoutes.dynamicForm),
-                  ),
-                  _QuickActionCard(
                     icon: Icons.person,
                     title: 'Edit Profile',
                     subtitle: 'Update your details',

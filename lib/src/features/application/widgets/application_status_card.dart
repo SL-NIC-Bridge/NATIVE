@@ -26,7 +26,7 @@ class ApplicationStatusCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Application #${application.id.substring(0, 8)}...',
+                  'Application #${application.id}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -79,28 +79,20 @@ class ApplicationStatusCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: CustomButton(
-                    onPressed: onViewStatus,
-                    text: 'View Status',
-                    type: ButtonType.secondary,
-                    icon: Icons.visibility,
-                  ),
-                ),
-                if (onStartNew != null) ...[
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: CustomButton(
-                      onPressed: onStartNew,
-                      text: 'Start New',
-                      icon: Icons.add,
-                    ),
-                  ),
-                ],
-              ],
+            CustomButton(
+              onPressed: onViewStatus,
+              text: 'View Status',
+              type: ButtonType.text,
+              icon: Icons.visibility,
             ),
+            if (onStartNew != null) ...[
+              const SizedBox(height: 12),
+              CustomButton(
+                onPressed: onStartNew,
+                text: 'Start New',
+                icon: Icons.add,
+              ),
+            ],
           ],
         ),
       ),

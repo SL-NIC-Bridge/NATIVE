@@ -5,6 +5,7 @@ class AppRoutes {
   static const String dashboard = '/dashboard';
   static const String applicationForm = '/application-form';
   static const String dynamicForm = '/dynamic-form';
+  static String dynamicFormWithType(String formType) => '/dynamic-form/$formType';
   static const String applicationStatus = '/application-status';
   static const String settings = '/settings';
   static const String editProfile = '/settings/edit-profile';

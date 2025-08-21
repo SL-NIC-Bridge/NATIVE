@@ -1,257 +1,251 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../models/form_config_model.dart';
+import 'package:sl_nic_bridge/src/core/config/form_config_provider.dart';
 import '../../../shared/widgets/dynamic_form/dynamic_multi_step_form.dart';
+import '../../../core/config/app_config_provider.dart';
+import '../../../shared/utils/form_utils.dart';
+import '../repositories/application_repository.dart';
+import '../providers/application_provider.dart';
 
 class DynamicFormScreen extends ConsumerWidget {
-  const DynamicFormScreen({super.key});
+  final String formType;
+  
+  const DynamicFormScreen({
+    super.key,
+    required this.formType,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return DynamicMultiStepForm(
-      formConfig: _getSampleFormConfig(),
-      onSubmit: (formData) async {
-        // Handle form submission
-        await _handleFormSubmission(context, formData);
-      },
-      onCancel: () {
-        context.pop();
-      },
-    );
-  }
-
-  FormConfig _getSampleFormConfig() {
-    return FormConfig(
-      id: 'sample-dynamic-form',
-      title: 'Dynamic Multi-Step Form',
-      description: 'A sample form demonstrating all field types',
-      steps: [
-        // Step 1: Personal Information
-        FormStep(
-          id: 'personal-info',
-          title: 'Personal Info',
-          description: 'Please provide your basic personal information',
-          fields: [
-            FormFieldConfig(
-              fieldId: 'firstName',
-              type: FieldType.text,
-              label: 'First Name',
-              placeholder: 'Enter your first name',
-              required: true,
-              properties: {},
-              validationRules: [
-                ValidationRule(
-                  type: 'minLength',
-                  value: 2,
-                  message: 'First name must be at least 2 characters',
-                ),
-              ],
-            ),
-            FormFieldConfig(
-              fieldId: 'lastName',
-              type: FieldType.text,
-              label: 'Last Name',
-              placeholder: 'Enter your last name',
-              required: true,
-              properties: {},
-              validationRules: [
-                ValidationRule(
-                  type: 'minLength',
-                  value: 2,
-                  message: 'Last name must be at least 2 characters',
-                ),
-              ],
-            ),
-            FormFieldConfig(
-              fieldId: 'email',
-              type: FieldType.email,
-              label: 'Email Address',
-              placeholder: 'Enter your email',
-              required: true,
-              properties: {},
-              validationRules: [
-                ValidationRule(
-                  type: 'email',
-                  value: true,
-                  message: 'Please enter a valid email address',
-                ),
-              ],
-            ),
-            FormFieldConfig(
-              fieldId: 'phone',
-              type: FieldType.phone,
-              label: 'Phone Number',
-              placeholder: 'Enter your phone number',
-              required: false,
-              properties: {},
-              validationRules: [],
-            ),
-            FormFieldConfig(
-              fieldId: 'dateOfBirth',
-              type: FieldType.date,
-              label: 'Date of Birth',
-              placeholder: 'Select your date of birth',
-              required: true,
-              properties: {},
-              validationRules: [],
-            ),
-          ],
-        ),
-        
-        // Step 2: Additional Details
-        FormStep(
-          id: 'additional-details',
-          title: 'Details',
-          description: 'Additional information and preferences',
-          fields: [
-            FormFieldConfig(
-              fieldId: 'age',
-              type: FieldType.number,
-              label: 'Age',
-              placeholder: 'Enter your age',
-              required: true,
-              properties: {},
-              validationRules: [
-                ValidationRule(
-                  type: 'min',
-                  value: 18,
-                  message: 'Age must be at least 18',
-                ),
-                ValidationRule(
-                  type: 'max',
-                  value: 120,
-                  message: 'Age must be less than 120',
-                ),
-              ],
-            ),
-            FormFieldConfig(
-              fieldId: 'country',
-              type: FieldType.select,
-              label: 'Country',
-              placeholder: 'Select your country',
-              required: true,
-              properties: {
-                'options': [
-                  {'value': 'us', 'label': 'United States'},
-                  {'value': 'uk', 'label': 'United Kingdom'},
-                  {'value': 'ca', 'label': 'Canada'},
-                  {'value': 'au', 'label': 'Australia'},
-                  {'value': 'de', 'label': 'Germany'},
-                  {'value': 'fr', 'label': 'France'},
-                  {'value': 'lk', 'label': 'Sri Lanka'},
-                ],
-              },
-              validationRules: [],
-            ),
-            FormFieldConfig(
-              fieldId: 'gender',
-              type: FieldType.radio,
-              label: 'Gender',
-              placeholder: '',
-              required: true,
-              properties: {
-                'options': [
-                  {'value': 'male', 'label': 'Male'},
-                  {'value': 'female', 'label': 'Female'},
-                  {'value': 'other', 'label': 'Other'},
-                  {'value': 'prefer-not-to-say', 'label': 'Prefer not to say'},
-                ],
-              },
-              validationRules: [],
-            ),
-            FormFieldConfig(
-              fieldId: 'bio',
-              type: FieldType.textarea,
-              label: 'Bio',
-              placeholder: 'Tell us about yourself...',
-              required: false,
-              properties: {
-                'maxLines': 4,
-              },
-              validationRules: [
-                ValidationRule(
-                  type: 'maxLength',
-                  value: 500,
-                  message: 'Bio must not exceed 500 characters',
-                ),
-              ],
-            ),
-          ],
-        ),
-        
-        // Step 3: Preferences and Files
-        FormStep(
-          id: 'preferences-files',
-          title: 'Preferences',
-          description: 'Your preferences and document uploads',
-          fields: [
-            FormFieldConfig(
-              fieldId: 'interests',
-              type: FieldType.checkbox,
-              label: 'Interests',
-              placeholder: '',
-              required: false,
-              properties: {
-                'options': [
-                  {'value': 'sports', 'label': 'Sports'},
-                  {'value': 'music', 'label': 'Music'},
-                  {'value': 'movies', 'label': 'Movies'},
-                  {'value': 'reading', 'label': 'Reading'},
-                  {'value': 'travel', 'label': 'Travel'},
-                  {'value': 'technology', 'label': 'Technology'},
-                ],
-              },
-              validationRules: [],
-            ),
-            FormFieldConfig(
-              fieldId: 'newsletter',
-              type: FieldType.checkbox,
-              label: 'Subscribe to Newsletter',
-              placeholder: '',
-              required: false,
-              properties: {},
-              validationRules: [],
-            ),
-            FormFieldConfig(
-              fieldId: 'profilePhoto',
-              type: FieldType.file,
-              label: 'Profile Photo',
-              placeholder: 'Upload your profile photo',
-              required: false,
-              properties: {},
-              validationRules: [],
-            ),
-            FormFieldConfig(
-              fieldId: 'signature',
-              type: FieldType.signature,
-              label: 'Digital Signature',
-              placeholder: 'Please sign here',
-              required: true,
-              properties: {},
-              validationRules: [],
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Future<void> _handleFormSubmission(BuildContext context, Map<String, dynamic> formData) async {
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
+    final appConfigAsync = ref.watch(formConfigProvider);
     
-    if (!context.mounted) return;
-    
-    // Show success message and return to previous screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Form submitted successfully!\nData: ${formData.toString()}'),
-        duration: const Duration(seconds: 4),
-        backgroundColor: Colors.green,
+    return appConfigAsync.when(
+      data: (appConfig) {
+        final formConfig = appConfig;
+            
+        if (formConfig.formTypes.isEmpty) {
+
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Form Not Found'),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Form configuration not found',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'The requested form type is not available.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.pop(),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        
+        // Check if the form type exists in the configuration
+        if (!formConfig.formConfigs.containsKey(formType)) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Invalid Form Type'),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Invalid form type: $formType',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'The requested form type does not exist.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.pop(),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return DynamicMultiStepForm(
+          formConfig: formConfig,
+          formType: formType,
+          onSubmit: (formData) async {
+            await _handleFormSubmission(context, ref, formData, formType);
+          },
+          onCancel: () {
+            context.pop();
+          },
+        );
+      },
+      loading: () => const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (error, stackTrace) => Scaffold(
+        appBar: AppBar(
+          title: const Text('Error'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Failed to load form configuration',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Please try again later.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(appConfigProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
-    
-    context.pop();
+  }
+
+  Future<void> _handleFormSubmission(
+    BuildContext context, 
+    WidgetRef ref, 
+    Map<String, dynamic> formData,
+    String formType,
+  ) async {
+    try {
+      // Get app config to access form configuration
+      final appConfig = await ref.read(formConfigProvider.future);
+      final formConfig = appConfig;
+      
+      if (formConfig.formTypes.isEmpty) {
+        throw Exception('Form configuration not found');
+      }
+
+      // Clean and prepare form data for submission
+      final cleanedData = FormUtils.prepareFormDataForSubmission(
+        formConfig,
+        formType,
+        formData,
+      );
+
+      // Get application repository and submit the form
+      final repository = await ref.read(applicationRepositoryProvider.future);
+      
+      // Map the cleaned data to the repository method parameters
+      // This mapping will depend on the form type
+      await _submitFormData(repository, formType, cleanedData);
+
+      // Refresh the application status after successful submission
+      ref.invalidate(applicationStatusProvider);
+      
+      if (!context.mounted) return;
+
+      // Navigate back and show success message
+      context.pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Application submitted successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to submit application: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _submitFormData(
+    ApplicationRepository repository,
+    String formType,
+    Map<String, dynamic> cleanedData,
+  ) async {
+    switch (formType) {
+      case 'new_nic':
+        await repository.submitApplication(
+          previousNicNumber: cleanedData['previousNicNumber'],
+          permanentAddress: cleanedData['permanentAddress'] ?? '',
+          dateOfBirth: cleanedData['dateOfBirth'] != null 
+              ? DateTime.tryParse(cleanedData['dateOfBirth']) ?? DateTime.now()
+              : DateTime.now(),
+          placeOfBirth: cleanedData['placeOfBirth'] ?? '',
+        );
+        break;
+        
+      case 'replacement_nic':
+        await repository.submitApplication(
+          previousNicNumber: cleanedData['previousNicNumber'],
+          permanentAddress: cleanedData['permanentAddress'] ?? '',
+          dateOfBirth: DateTime.now(), // This would need proper handling
+          placeOfBirth: cleanedData['placeOfBirth'] ?? '',
+        );
+        break;
+        
+      case 'nic_correction':
+        await repository.submitApplication(
+          previousNicNumber: cleanedData['currentNicNumber'],
+          permanentAddress: cleanedData['correctAddress'] ?? cleanedData['permanentAddress'] ?? '',
+          dateOfBirth: cleanedData['correctDateOfBirth'] != null
+              ? DateTime.tryParse(cleanedData['correctDateOfBirth']) ?? DateTime.now()
+              : DateTime.now(),
+          placeOfBirth: cleanedData['placeOfBirth'] ?? '',
+        );
+        break;
+        
+      default:
+        throw Exception('Unknown form type: $formType');
+    }
   }
 }

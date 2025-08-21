@@ -7,7 +7,7 @@ import 'app_config.dart';
 final appConfigProvider = FutureProvider<AppConfig>((ref) async {
   try {
     developer.log('Loading app configuration...', name: 'AppConfig');
-    final configString = await rootBundle.loadString('assets/config/config.json');
+    final configString = await rootBundle.loadString('assets/config/app_config.json');
     developer.log('Configuration file loaded successfully', name: 'AppConfig');
     
     final configJson = json.decode(configString) as Map<String, dynamic>;

@@ -1,0 +1,415 @@
+{
+  "commonFields": {
+    "firstName": {
+      "fieldId": "firstName",
+      "type": "text",
+      "label": "First Name",
+      "placeholder": "Enter your first name",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "minLength",
+          "value": 2,
+          "message": "First name must be at least 2 characters"
+        },
+        {
+          "type": "pattern",
+          "value": "^[a-zA-Z\\s]+$",
+          "message": "First name can only contain letters and spaces"
+        }
+      ]
+    },
+    "lastName": {
+      "fieldId": "lastName",
+      "type": "text",
+      "label": "Last Name",
+      "placeholder": "Enter your last name",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "minLength",
+          "value": 2,
+          "message": "Last name must be at least 2 characters"
+        },
+        {
+          "type": "pattern",
+          "value": "^[a-zA-Z\\s]+$",
+          "message": "Last name can only contain letters and spaces"
+        }
+      ]
+    },
+    "dateOfBirth": {
+      "fieldId": "dateOfBirth",
+      "type": "date",
+      "label": "Date of Birth",
+      "placeholder": "Select your date of birth",
+      "required": true,
+      "properties": {},
+      "validationRules": []
+    },
+    "permanentAddress": {
+      "fieldId": "permanentAddress",
+      "type": "textarea",
+      "label": "Permanent Address",
+      "placeholder": "Enter your permanent address",
+      "required": true,
+      "properties": {
+        "maxLines": 3
+      },
+      "validationRules": [
+        {
+          "type": "minLength",
+          "value": 10,
+          "message": "Address must be at least 10 characters"
+        }
+      ]
+    },
+    "phone": {
+      "fieldId": "phone",
+      "type": "phone",
+      "label": "Phone Number",
+      "placeholder": "Enter your phone number",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "pattern",
+          "value": "^(\\+94|0)[0-9]{9}$",
+          "message": "Please enter a valid Sri Lankan phone number"
+        }
+      ]
+    },
+    "email": {
+      "fieldId": "email",
+      "type": "email",
+      "label": "Email Address",
+      "placeholder": "Enter your email address",
+      "required": false,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "email",
+          "value": true,
+          "message": "Please enter a valid email address"
+        }
+      ]
+    },
+    "nicNumber": {
+      "fieldId": "nicNumber",
+      "type": "text",
+      "label": "NIC Number",
+      "placeholder": "Enter NIC number",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "pattern",
+          "value": "^([0-9]{9}[vVxX]|[0-9]{12})$",
+          "message": "Please enter a valid NIC number"
+        }
+      ]
+    }
+  },
+  "fieldVariations": {
+    "correctFirstName": {
+      "fieldId": "correctFirstName",
+      "type": "text",
+      "label": "Correct First Name",
+      "placeholder": "Enter the correct first name",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "minLength",
+          "value": 2,
+          "message": "First name must be at least 2 characters"
+        }
+      ],
+      "extends": "firstName"
+    },
+    "correctLastName": {
+      "fieldId": "correctLastName",
+      "type": "text",
+      "label": "Correct Last Name",
+      "placeholder": "Enter the correct last name",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "minLength",
+          "value": 2,
+          "message": "Last name must be at least 2 characters"
+        }
+      ],
+      "extends": "lastName"
+    },
+    "correctDateOfBirth": {
+      "fieldId": "correctDateOfBirth",
+      "type": "date",
+      "label": "Correct Date of Birth",
+      "placeholder": "Select the correct date of birth",
+      "required": false,
+      "properties": {},
+      "validationRules": [],
+      "extends": "dateOfBirth"
+    },
+    "correctAddress": {
+      "fieldId": "correctAddress",
+      "type": "textarea",
+      "label": "Correct Address",
+      "placeholder": "Enter the correct address",
+      "required": false,
+      "properties": {
+        "maxLines": 3
+      },
+      "validationRules": [],
+      "extends": "permanentAddress"
+    },
+    "currentAddress": {
+      "fieldId": "permanentAddress",
+      "type": "textarea",
+      "label": "Current Address",
+      "placeholder": "Enter your current address",
+      "required": true,
+      "properties": {
+        "maxLines": 3
+      },
+      "validationRules": [
+        {
+          "type": "minLength",
+          "value": 10,
+          "message": "Address must be at least 10 characters"
+        }
+      ],
+      "extends": "permanentAddress"
+    },
+    "previousNicNumber": {
+      "fieldId": "previousNicNumber",
+      "type": "text",
+      "label": "Previous NIC Number",
+      "placeholder": "Enter your previous NIC number",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "pattern",
+          "value": "^([0-9]{9}[vVxX]|[0-9]{12})$",
+          "message": "Please enter a valid NIC number"
+        }
+      ],
+      "extends": "nicNumber"
+    },
+    "currentNicNumber": {
+      "fieldId": "currentNicNumber",
+      "type": "text",
+      "label": "Current NIC Number",
+      "placeholder": "Enter your current NIC number",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "pattern",
+          "value": "^([0-9]{9}[vVxX]|[0-9]{12})$",
+          "message": "Please enter a valid NIC number"
+        }
+      ],
+      "extends": "nicNumber"
+    }
+  },
+  "formTypes": [
+    {
+      "id": "new_nic",
+      "name": "New NIC Application",
+      "description": "Apply for a new National Identity Card"
+    },
+    {
+      "id": "replacement_nic",
+      "name": "NIC Replacement",
+      "description": "Replace lost, damaged, or expired NIC"
+    },
+    {
+      "id": "nic_correction",
+      "name": "NIC Correction",
+      "description": "Correct information on existing NIC"
+    }
+  ],
+  "formConfigs": {
+    "new_nic": {
+      "id": "new-nic-form",
+      "title": "New NIC Application",
+      "description": "Complete the form below to apply for a new National Identity Card",
+      "steps": [
+        {
+          "id": "personal-info",
+          "title": "Personal Information",
+          "description": "Provide your basic personal details",
+          "fields": [
+            {
+              "$ref": "#/commonFields/firstName"
+            },
+            {
+              "$ref": "#/commonFields/lastName"
+            },
+            {
+              "$ref": "#/commonFields/dateOfBirth"
+            },
+            {
+              "fieldId": "placeOfBirth",
+              "type": "text",
+              "label": "Place of Birth",
+              "placeholder": "Enter your place of birth",
+              "required": true,
+              "properties": {},
+              "validationRules": [
+                {
+                  "type": "minLength",
+                  "value": 2,
+                  "message": "Place of birth must be at least 2 characters"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "address-info",
+          "title": "Address Information",
+          "description": "Provide your current address details",
+          "fields": [
+            {
+              "$ref": "#/commonFields/permanentAddress"
+            },
+            {
+              "$ref": "#/commonFields/phone"
+            },
+            {
+              "$ref": "#/commonFields/email"
+            }
+          ]
+        }
+      ]
+    },
+    "replacement_nic": {
+      "id": "replacement-nic-form",
+      "title": "NIC Replacement Application",
+      "description": "Replace your lost, damaged, or expired National Identity Card",
+      "steps": [
+        {
+          "id": "existing-nic-info",
+          "title": "Existing NIC Information",
+          "description": "Provide details about your current/previous NIC",
+          "fields": [
+            {
+              "$ref": "#/fieldVariations/previousNicNumber"
+            },
+            {
+              "fieldId": "replacementReason",
+              "type": "select",
+              "label": "Reason for Replacement",
+              "placeholder": "Select reason",
+              "required": true,
+              "properties": {
+                "options": [
+                  {"value": "lost", "label": "Lost"},
+                  {"value": "damaged", "label": "Damaged"},
+                  {"value": "expired", "label": "Expired"},
+                  {"value": "stolen", "label": "Stolen"}
+                ]
+              },
+              "validationRules": []
+            }
+          ]
+        },
+        {
+          "id": "personal-info",
+          "title": "Personal Information",
+          "description": "Confirm your personal details",
+          "fields": [
+            {
+              "$ref": "#/commonFields/firstName"
+            },
+            {
+              "$ref": "#/commonFields/lastName"
+            },
+            {
+              "$ref": "#/fieldVariations/currentAddress"
+            },
+            {
+              "$ref": "#/commonFields/phone"
+            }
+          ]
+        }
+      ]
+    },
+    "nic_correction": {
+      "id": "nic-correction-form",
+      "title": "NIC Information Correction",
+      "description": "Request correction of information on your existing NIC",
+      "steps": [
+        {
+          "id": "existing-nic-info",
+          "title": "Current NIC Information",
+          "description": "Provide your current NIC details",
+          "fields": [
+            {
+              "$ref": "#/fieldVariations/currentNicNumber"
+            },
+            {
+              "fieldId": "correctionType",
+              "type": "select",
+              "label": "Type of Correction",
+              "placeholder": "Select correction type",
+              "required": true,
+              "properties": {
+                "options": [
+                  {"value": "name", "label": "Name Correction"},
+                  {"value": "address", "label": "Address Correction"},
+                  {"value": "birth_date", "label": "Date of Birth Correction"},
+                  {"value": "other", "label": "Other Information"}
+                ]
+              },
+              "validationRules": []
+            },
+            {
+              "fieldId": "correctionDetails",
+              "type": "textarea",
+              "label": "Details of Correction Required",
+              "placeholder": "Describe what needs to be corrected and the correct information",
+              "required": true,
+              "properties": {
+                "maxLines": 4
+              },
+              "validationRules": [
+                {
+                  "type": "minLength",
+                  "value": 20,
+                  "message": "Please provide detailed information about the correction needed"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "correct-info",
+          "title": "Correct Information",
+          "description": "Provide the correct information",
+          "fields": [
+            {
+              "$ref": "#/fieldVariations/correctFirstName"
+            },
+            {
+              "$ref": "#/fieldVariations/correctLastName"
+            },
+            {
+              "$ref": "#/fieldVariations/correctDateOfBirth"
+            },
+            {
+              "$ref": "#/fieldVariations/correctAddress"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../features/application/models/form_config_model.dart';
+import 'package:sl_nic_bridge/src/core/config/field_type.dart';
+import 'package:sl_nic_bridge/src/core/config/form_config_model.dart' as form_config;
 import '../custom_text_field.dart';
 
 class DynamicFormField extends StatefulWidget {
-  final FormFieldConfig config;
+  final form_config.FormField config;
   final dynamic value;
   final Function(dynamic value) onChanged;
   final String? errorText;
@@ -47,7 +48,7 @@ class _DynamicFormFieldState extends State<DynamicFormField> {
 
   @override
   Widget build(BuildContext context) {
-    switch (widget.config.type) {
+    switch (widget.config.type as FieldType) {
       case FieldType.text:
       case FieldType.email:
       case FieldType.phone:
@@ -144,7 +145,7 @@ class _DynamicFormFieldState extends State<DynamicFormField> {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           initialValue: widget.value?.toString(),
-          hint: Text(widget.config.placeholder ?? widget.config.label),
+          hint: Text(widget.config.placeholder),
           decoration: const InputDecoration(),
           validator: _getValidator(),
           items: options.map((option) {
@@ -315,7 +316,7 @@ class _DynamicFormFieldState extends State<DynamicFormField> {
                 const Icon(Icons.upload_file, size: 40, color: Colors.grey),
                 const SizedBox(height: 8),
                 Text(
-                  widget.config.placeholder ?? 'Tap to select file',
+                  widget.config.placeholder,
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
               ],
@@ -366,7 +367,7 @@ class _DynamicFormFieldState extends State<DynamicFormField> {
                 const Icon(Icons.draw, size: 40, color: Colors.grey),
                 const SizedBox(height: 8),
                 Text(
-                  widget.config.placeholder ?? 'Tap to sign',
+                  widget.config.placeholder,
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
               ],
@@ -387,7 +388,7 @@ class _DynamicFormFieldState extends State<DynamicFormField> {
   }
 
   TextInputType? _getKeyboardType() {
-    switch (widget.config.type) {
+    switch (widget.config.type as FieldType) {
       case FieldType.email:
         return TextInputType.emailAddress;
       case FieldType.phone:
@@ -416,7 +417,7 @@ class _DynamicFormFieldState extends State<DynamicFormField> {
     };
   }
 
-  String? _validateRule(String? value, ValidationRule rule) {
+  String? _validateRule(String? value, form_config.ValidationRule rule) {
     if (value?.isEmpty ?? true) return null;
 
     switch (rule.type) {

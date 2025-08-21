@@ -85,8 +85,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ApplicationFormScreen(),
       ),
       GoRoute(
-        path: AppRoutes.dynamicForm,
-        builder: (context, state) => const DynamicFormScreen(),
+        path: '${AppRoutes.dynamicForm}/:formType',
+        builder: (context, state) => DynamicFormScreen(
+          formType: state.pathParameters['formType']!,
+        ),
       ),
       GoRoute(
         path: AppRoutes.applicationStatus,
@@ -141,8 +143,10 @@ final appRouterProvider2 = Provider<GoRouter>((ref) {
         builder: (context, state) => const ApplicationFormScreen(),
       ),
       GoRoute(
-        path: AppRoutes.dynamicForm,
-        builder: (context, state) => const DynamicFormScreen(),
+        path: '${AppRoutes.dynamicForm}/:formType',
+        builder: (context, state) => DynamicFormScreen(
+          formType: state.pathParameters['formType']!,
+        ),
       ),
       GoRoute(
         path: AppRoutes.applicationStatus,

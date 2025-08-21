@@ -1,9 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sl_nic_bridge/src/features/auth/models/user_model.dart';
 import '../models/auth_state.dart';
 import '../repositories/auth_repository.dart';
+import '../repositories/mock_auth_repository.dart';
+import '../../../core/config/app_service_config.dart';
 import '../../../core/constants/app_keys.dart';
+
+// Repository provider that switches between mock and real repository
+final currentAuthRepositoryProvider = Provider<FutureOr<dynamic>>((ref) {
+  final config = ref.watch(appConfigProvider);
+  if (config.useMockServices) {
+    return ref.watch(mockAuthRepositoryProvider);
+  } else {
+    return ref.watch(authRepositoryProvider.future);
+  }
+});
 
 final authStateProvider = StateNotifierProvider<AuthNotifier, AsyncValue<AuthState>>((ref) {
   return AuthNotifier(ref);
@@ -35,7 +49,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
     state = const AsyncValue.loading();
     
     try {
-      final authRepository = await _ref.read(authRepositoryProvider.future);
+      final authRepository = await _ref.read(currentAuthRepositoryProvider);
       final response = await authRepository.login(email, password);
       await _storage.write(key: AppKeys.authToken, value: response.token);
       
@@ -57,7 +71,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
     state = const AsyncValue.loading();
     
     try {
-      final authRepository = await _ref.read(authRepositoryProvider.future);
+      final authRepository = await _ref.read(currentAuthRepositoryProvider);
       final response = await authRepository.register(
         fullName: fullName,
         email: email,

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../../features/application/models/form_config_model.dart';
+import 'package:sl_nic_bridge/src/core/config/form_config_model.dart' as config;
+import 'package:sl_nic_bridge/src/core/config/form_config_entry.dart';
 import 'dynamic_form_field.dart';
 import '../custom_button.dart';
 
 class DynamicMultiStepForm extends StatefulWidget {
-  final FormConfig formConfig;
+  final config.FormConfig formConfig;
+  final String formType;
   final Map<String, dynamic>? initialData;
   final Function(Map<String, dynamic> formData) onSubmit;
   final VoidCallback? onCancel;
@@ -12,6 +14,7 @@ class DynamicMultiStepForm extends StatefulWidget {
   const DynamicMultiStepForm({
     super.key,
     required this.formConfig,
+    required this.formType,
     this.initialData,
     required this.onSubmit,
     this.onCancel,
@@ -23,16 +26,18 @@ class DynamicMultiStepForm extends StatefulWidget {
 
 class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
   late PageController _pageController;
+  late FormConfigEntry _formConfigEntry;
   int _currentStep = 0;
   Map<String, dynamic> _formData = {};
   Map<String, String> _fieldErrors = {};
   bool _isSubmitting = false;
-  
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     _formData = Map<String, dynamic>.from(widget.initialData ?? {});
+    _formConfigEntry = widget.formConfig.formConfigs[widget.formType]!;
   }
 
   @override
@@ -42,32 +47,29 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
   }
 
   bool get _isFirstStep => _currentStep == 0;
-  bool get _isLastStep => _currentStep == widget.formConfig.steps.length - 1;
+  bool get _isLastStep => _currentStep == _formConfigEntry.steps.length - 1;
 
   void _updateFieldValue(String fieldId, dynamic value) {
     setState(() {
       _formData[fieldId] = value;
-      _fieldErrors.remove(fieldId); // Clear error when user makes changes
+      _fieldErrors.remove(fieldId);
     });
   }
 
   bool _validateCurrentStep() {
-    final currentStepConfig = widget.formConfig.steps[_currentStep];
+    final currentStepConfig = _formConfigEntry.steps[_currentStep];
     final errors = <String, String>{};
     
     for (final field in currentStepConfig.fields) {
       final value = _formData[field.fieldId];
       
-      // Check required fields
       if (field.required && (value == null || value.toString().isEmpty)) {
         errors[field.fieldId] = '${field.label} is required';
         continue;
       }
       
-      // Skip validation for empty non-required fields
       if (value == null || value.toString().isEmpty) continue;
       
-      // Validate using field's validation rules
       for (final rule in field.validationRules) {
         final error = _validateRule(value.toString(), rule, field);
         if (error != null) {
@@ -84,7 +86,7 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
     return errors.isEmpty;
   }
 
-  String? _validateRule(String value, ValidationRule rule, FormFieldConfig field) {
+  String? _validateRule(String value, config.ValidationRule rule, config.FormField field) {
     switch (rule.type) {
       case 'minLength':
         if (value.length < (rule.value as num).toInt()) {
@@ -107,7 +109,7 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
         }
         break;
       case 'min':
-        if (field.type == FieldType.number) {
+        if (field.type == "number") {
           final numValue = double.tryParse(value);
           if (numValue != null && numValue < (rule.value as num)) {
             return rule.message;
@@ -115,7 +117,7 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
         }
         break;
       case 'max':
-        if (field.type == FieldType.number) {
+        if (field.type == "number") {
           final numValue = double.tryParse(value);
           if (numValue != null && numValue > (rule.value as num)) {
             return rule.message;
@@ -167,7 +169,7 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.formConfig.title),
+        title: Text(_formConfigEntry.title),
         leading: widget.onCancel != null
             ? IconButton(
                 icon: const Icon(Icons.close),
@@ -177,19 +179,18 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
       ),
       body: Column(
         children: [
-          // Step indicator
-          if (widget.formConfig.steps.length > 1)
+          if (_formConfigEntry.steps.length > 1)
             Container(
               padding: const EdgeInsets.all(16),
               child: Row(
-                children: List.generate(widget.formConfig.steps.length, (index) {
+                children: List.generate(_formConfigEntry.steps.length, (index) {
                   final isActive = index == _currentStep;
                   final isCompleted = index < _currentStep;
                   
                   return Expanded(
                     child: Container(
                       margin: EdgeInsets.only(
-                        right: index < widget.formConfig.steps.length - 1 ? 8 : 0,
+                        right: index < _formConfigEntry.steps.length - 1 ? 8 : 0,
                       ),
                       child: Column(
                         children: [
@@ -204,7 +205,7 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            widget.formConfig.steps[index].title,
+                            _formConfigEntry.steps[index].title,
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: isCompleted || isActive
                                   ? Theme.of(context).primaryColor
@@ -223,16 +224,15 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
               ),
             ),
           
-          // Form content
           Expanded(
             child: PageView.builder(
               controller: _pageController,
               onPageChanged: (index) {
                 setState(() => _currentStep = index);
               },
-              itemCount: widget.formConfig.steps.length,
+              itemCount: _formConfigEntry.steps.length,
               itemBuilder: (context, stepIndex) {
-                final step = widget.formConfig.steps[stepIndex];
+                final step = _formConfigEntry.steps[stepIndex];
                 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
@@ -269,14 +269,13 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
             ),
           ),
           
-          // Navigation buttons
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Theme.of(context).scaffoldBackgroundColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),

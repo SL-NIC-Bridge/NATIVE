@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:sl_nic_bridge/src/features/application/models/application_model.dart';
 import '../providers/application_provider.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/errors/app_error.dart';
+import '../../../core/services/service_status.dart';
 import '../../../shared/widgets/custom_button.dart';
 
 class ApplicationStatusScreen extends ConsumerWidget {
@@ -71,7 +73,7 @@ class ApplicationStatusScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               _StatusCard(
                 title: 'Current Status',
-                content: application.status.toString(),
+                content: application.status.toString().split('.').last,
                 icon: Icons.info_outline,
                 color: _getStatusColor(application.status),
               ),
@@ -108,30 +110,111 @@ class ApplicationStatusScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(),
         ),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.red,
+        error: (error, stack) {
+          // Check service status
+          final serviceStatus = ref.read(serviceStatusProvider);
+          if (!serviceStatus.isConnected) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.cloud_off,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Service Unavailable',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    serviceStatus.message,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  CustomButton(
+                    onPressed: () => ref.invalidate(applicationStatusProvider),
+                    text: 'Try Again',
+                    type: ButtonType.secondary,
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Error: $error',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.red),
-              ),
-              const SizedBox(height: 24),
-              CustomButton(
-                onPressed: () => ref.invalidate(applicationStatusProvider),
-                text: 'Retry',
-                type: ButtonType.secondary,
-              ),
-            ],
-          ),
-        ),
+            );
+          }
+
+          // Handle specific errors
+          final appError = AppError.handle(error, stack);
+          IconData errorIcon;
+          String errorTitle;
+
+          switch (appError.type) {
+            case ErrorType.network:
+              errorIcon = Icons.wifi_off;
+              errorTitle = 'Network Error';
+              break;
+            case ErrorType.unauthorized:
+              errorIcon = Icons.lock;
+              errorTitle = 'Authentication Error';
+              break;
+            case ErrorType.forbidden:
+              errorIcon = Icons.block;
+              errorTitle = 'Access Denied';
+              break;
+            case ErrorType.notFound:
+              errorIcon = Icons.search_off;
+              errorTitle = 'Not Found';
+              break;
+            default:
+              errorIcon = Icons.error_outline;
+              errorTitle = 'Error';
+          }
+
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  errorIcon,
+                  size: 64,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  errorTitle,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    appError.message,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                CustomButton(
+                  onPressed: () => ref.invalidate(applicationStatusProvider),
+                  text: 'Retry',
+                  type: ButtonType.secondary,
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
