@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sl_nic_bridge/src/core/config/form_config_model.dart';
 import 'package:sl_nic_bridge/src/core/config/form_config_provider.dart';
-import '../../../core/config/app_config_provider.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/utils/form_utils.dart';
@@ -38,15 +37,10 @@ class FormTypeSelectionScreen extends ConsumerWidget {
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.description_outlined,
-                              size: 32,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
                                     'NIC Application Services',
@@ -60,6 +54,7 @@ class FormTypeSelectionScreen extends ConsumerWidget {
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
@@ -70,17 +65,8 @@ class FormTypeSelectionScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                
-                // Form Types Section
-                Text(
-                  'Available Services',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
+                const SizedBox(height: 30),
+                                
                 // Form Type Cards
                 ...formTypes.map((formType) => _buildFormTypeCard(
                   context,
@@ -94,34 +80,42 @@ class FormTypeSelectionScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(),
         ),
-        error: (error, stackTrace) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Failed to load form types',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Please try again later',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+        error: (error, stackTrace) => SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 64),  // Add some top spacing
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Theme.of(context).colorScheme.error,
                 ),
-              ),
-              const SizedBox(height: 16),
-              CustomButton(
-                onPressed: () => ref.invalidate(appConfigProvider),
-                text: 'Retry',
-                icon: Icons.refresh,
-              ),
-            ],
+                const SizedBox(height: 16),
+                Text(
+                  'Failed to load form types',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please try again later',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: CustomButton(
+                    onPressed: () => ref.invalidate(formConfigProvider),
+                    text: 'Retry',
+                    icon: Icons.refresh,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -136,6 +130,7 @@ class FormTypeSelectionScreen extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Card(
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
@@ -209,6 +204,6 @@ class FormTypeSelectionScreen extends ConsumerWidget {
 
   void _navigateToForm(BuildContext context, String formTypeId) {
     // Navigate to dynamic form with form type parameter
-    context.push('${AppRoutes.dynamicForm}?formType=$formTypeId');
+    context.go(AppRoutes.dynamicFormWithType(formTypeId));
   }
 }

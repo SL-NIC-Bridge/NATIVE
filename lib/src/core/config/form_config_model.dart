@@ -119,9 +119,7 @@ class FormStep {
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
-      fields: (json['fields'] as List)
-          .map((fieldJson) => FormField.fromJson(fieldJson))
-          .toList(),
+      fields: [],  // We'll resolve fields after the full config is loaded
     );
   }
 
@@ -143,19 +141,68 @@ class FormConfig {
   });
 
   factory FormConfig.fromJson(Map<String, dynamic> json) {
+    // First, parse the common fields and variations
+    final commonFields = (json['commonFields'] as Map<String, dynamic>).map(
+      (key, value) => MapEntry(key, FormField.fromJson(value as Map<String, dynamic>)),
+    );
+    
+    final fieldVariations = (json['fieldVariations'] as Map<String, dynamic>).map(
+      (key, value) => MapEntry(key, FormFieldVariation.fromJson(value as Map<String, dynamic>)),
+    );
+    
+    final formTypes = (json['formTypes'] as List)
+        .map((typeJson) => FormType.fromJson(typeJson as Map<String, dynamic>))
+        .toList();
+
+    // Parse form configs and resolve field references
+    final formConfigs = (json['formConfigs'] as Map<String, dynamic>).map((key, value) {
+      final configJson = value as Map<String, dynamic>;
+      final steps = (configJson['steps'] as List).map((stepJson) {
+        final step = stepJson as Map<String, dynamic>;
+        final fields = (step['fields'] as List).map((fieldJson) {
+          if (fieldJson is Map<String, dynamic> && fieldJson.containsKey('\$ref')) {
+            final ref = fieldJson['\$ref'] as String;
+            // Parse the reference path
+            final parts = ref.split('/');
+            if (parts.length == 3 && parts[0] == '#') {
+              final section = parts[1];
+              final fieldKey = parts[2];
+              if (section == 'commonFields' && commonFields.containsKey(fieldKey)) {
+                return commonFields[fieldKey]!;
+              } else if (section == 'fieldVariations' && fieldVariations.containsKey(fieldKey)) {
+                return fieldVariations[fieldKey]!;
+              }
+            }
+            throw Exception('Invalid field reference: $ref');
+          } else {
+            return FormField.fromJson(fieldJson as Map<String, dynamic>);
+          }
+        }).toList();
+
+        return FormStep(
+          id: step['id'] as String,
+          title: step['title'] as String,
+          description: step['description'] as String,
+          fields: fields,
+        );
+      }).toList();
+
+      return MapEntry(
+        key,
+        FormConfigEntry(
+          id: configJson['id'] as String,
+          title: configJson['title'] as String,
+          description: configJson['description'] as String,
+          steps: steps,
+        ),
+      );
+    });
+
     return FormConfig(
-      commonFields: (json['commonFields'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, FormField.fromJson(value as Map<String, dynamic>)),
-      ),
-      fieldVariations: (json['fieldVariations'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, FormFieldVariation.fromJson(value as Map<String, dynamic>)),
-      ),
-      formTypes: (json['formTypes'] as List)
-          .map((typeJson) => FormType.fromJson(typeJson as Map<String, dynamic>))
-          .toList(),
-      formConfigs: (json['formConfigs'] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(key, FormConfigEntry.fromJson(value as Map<String, dynamic>)),
-      ),
+      commonFields: commonFields,
+      fieldVariations: fieldVariations,
+      formTypes: formTypes,
+      formConfigs: formConfigs,
     );
   }
 

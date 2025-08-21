@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sl_nic_bridge/src/core/config/form_config_provider.dart';
+import 'package:sl_nic_bridge/src/core/constants/app_routes.dart';
 import '../../../shared/widgets/dynamic_form/dynamic_multi_step_form.dart';
 import '../../../core/config/app_config_provider.dart';
 import '../../../shared/utils/form_utils.dart';
@@ -107,7 +108,7 @@ class DynamicFormScreen extends ConsumerWidget {
             await _handleFormSubmission(context, ref, formData, formType);
           },
           onCancel: () {
-            context.pop();
+            context.go(AppRoutes.applicationForm);
           },
         );
       },

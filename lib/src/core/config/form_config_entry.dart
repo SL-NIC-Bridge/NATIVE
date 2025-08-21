@@ -17,6 +17,14 @@ class FormConfigEntry {
     required this.steps,
   });
 
-  factory FormConfigEntry.fromJson(Map<String, dynamic> json) => _$FormConfigEntryFromJson(json);
+  // Using direct construction instead of generated fromJson since we handle parsing in FormConfig
+  factory FormConfigEntry.fromJson(Map<String, dynamic> json) {
+    return FormConfigEntry(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      steps: (json['steps'] as List).map((step) => FormStep.fromJson(step as Map<String, dynamic>)).toList(),
+    );
+  }
   Map<String, dynamic> toJson() => _$FormConfigEntryToJson(this);
 }
