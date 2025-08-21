@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'src/core/config/app_config_provider.dart';
+import 'src/core/locale/locale_provider.dart';
 import 'src/core/theme/theme_provider.dart';
 import 'src/core/router/app_router.dart';
 
@@ -11,6 +13,7 @@ class SLNICBridgeApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final config = ref.watch(appConfigProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
     final router = ref.watch(appRouterProvider);
 
     return config.when(
@@ -20,6 +23,17 @@ class SLNICBridgeApp extends ConsumerWidget {
         theme: ref.watch(lightThemeProvider(config)),
         darkTheme: ref.watch(darkThemeProvider(config)),
         themeMode: themeMode,
+        locale: locale,
+        supportedLocales: const [
+          Locale('en'),
+          Locale('si'),
+          Locale('ta'),
+        ],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         routerConfig: router,
       ),
       loading: () => const MaterialApp(

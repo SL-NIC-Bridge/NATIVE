@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/locale/locale_provider.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../providers/settings_provider.dart';
 import '../../../shared/widgets/custom_button.dart';
@@ -55,12 +56,12 @@ class SettingsScreen extends ConsumerWidget {
                 );
               },
             ),
-            SwitchListTile(
-              title: const Text('Enable Biometrics'),
-              secondary: const Icon(Icons.fingerprint),
-              value: settings.useBiometrics,
-              onChanged: (value) => ref.read(settingsProvider.notifier).toggleBiometrics(),
-            ),
+            // SwitchListTile(
+            //   title: const Text('Enable Biometrics'),
+            //   secondary: const Icon(Icons.fingerprint),
+            //   value: settings.useBiometrics,
+            //   onChanged: (value) => ref.read(settingsProvider.notifier).toggleBiometrics(),
+            // ),
             SwitchListTile(
               title: const Text('Notifications'),
               secondary: const Icon(Icons.notifications_outlined),
@@ -68,22 +69,27 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (value) => ref.read(settingsProvider.notifier).toggleNotifications(),
             ),
             const Divider(),
-            ListTile(
-              title: const Text('Language'),
-              leading: const Icon(Icons.language),
-              trailing: DropdownButton<String>(
-                value: settings.locale,
-                items: const [
-                  DropdownMenuItem(value: 'en', child: Text('English')),
-                  DropdownMenuItem(value: 'si', child: Text('සිංහල')),
-                  DropdownMenuItem(value: 'ta', child: Text('தமிழ்')),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    ref.read(settingsProvider.notifier).updateLocale(value);
-                  }
-                },
-              ),
+            Builder(
+              builder: (context) {
+                final currentLocale = ref.watch(localeProvider);
+                return ListTile(
+                  title: const Text('Language'),
+                  leading: const Icon(Icons.language),
+                  trailing: DropdownButton<String>(
+                    value: currentLocale.languageCode,
+                    items: const [
+                      DropdownMenuItem(value: 'en', child: Text('English')),
+                      DropdownMenuItem(value: 'si', child: Text('සිංහල')),
+                      DropdownMenuItem(value: 'ta', child: Text('தமிழ்')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref.read(localeProvider.notifier).setLocale(value);
+                      }
+                    },
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             Padding(
