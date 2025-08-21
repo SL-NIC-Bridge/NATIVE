@@ -52,12 +52,10 @@ class CustomButton extends StatelessWidget {
       case ButtonType.primary:
         return ElevatedButton(
           onPressed: isLoading ? null : onPressed,
-          style: backgroundColor != null || foregroundColor != null
-              ? ElevatedButton.styleFrom(
-                  backgroundColor: backgroundColor,
-                  foregroundColor: foregroundColor,
-                )
-              : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.primary,
+            foregroundColor: foregroundColor ?? Theme.of(context).colorScheme.onPrimary,
+          ),
           child: child,
         );
       case ButtonType.secondary:

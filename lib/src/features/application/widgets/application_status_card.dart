@@ -82,7 +82,7 @@ class ApplicationStatusCard extends StatelessWidget {
             CustomButton(
               onPressed: onViewStatus,
               text: 'View Status',
-              type: ButtonType.text,
+              type: ButtonType.secondary,
               icon: Icons.visibility,
             ),
             if (onStartNew != null) ...[
