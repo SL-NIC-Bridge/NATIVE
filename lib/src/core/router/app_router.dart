@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sl_nic_bridge/src/features/application/screens/form_type_selection_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
@@ -82,7 +83,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.applicationForm,
-        builder: (context, state) => const ApplicationFormScreen(),
+        builder: (context, state) => const FormTypeSelectionScreen(),
       ),
       GoRoute(
         path: '${AppRoutes.dynamicForm}/:formType',
