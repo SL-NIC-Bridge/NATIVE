@@ -87,7 +87,7 @@ class DynamicFormScreen extends ConsumerWidget {
                   Text(
                     'The requested form type does not exist.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                   const SizedBox(height: 16),

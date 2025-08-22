@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide FormField;
 import 'package:flutter/services.dart';
+import 'package:sl_nic_bridge/src/core/config/field_type.dart';
 import '../../core/config/form_config_model.dart';
 
 class FormUtils {
@@ -164,21 +165,21 @@ class FormUtils {
         final value = rawFormData[field.fieldId];
         if (value != null) {
           switch (field.type) {
-            case 'text':
-            case 'textarea':
-            case 'email':
+            case FieldType.text:
+            case FieldType.textarea:
+            case FieldType.email:
               cleanedData[field.fieldId] = value.toString().trim();
               break;
-            case 'phone':
+            case FieldType.phone:
               cleanedData[field.fieldId] = formatPhoneNumber(value.toString().trim());
               break;
-            case 'number':
+            case FieldType.number:
               cleanedData[field.fieldId] = double.tryParse(value.toString()) ?? 0;
               break;
-            case 'checkbox':
+            case FieldType.checkbox:
               cleanedData[field.fieldId] = value == true;
               break;
-            case 'date':
+            case FieldType.date:
               if (value is DateTime) {
                 cleanedData[field.fieldId] = value.toIso8601String();
               } else {
@@ -236,15 +237,15 @@ class FormUtils {
     final formatters = <TextInputFormatter>[];
     
     switch (field.type) {
-      case 'phone':
+      case FieldType.phone:
         // Allow only digits, +, and spaces
         formatters.add(FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s]')));
         break;
-      case 'number':
+      case FieldType.number:
         // Allow only digits and decimal point
         formatters.add(FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')));
         break;
-      case 'text':
+      case FieldType.text:
         // Check if there's a maxLength validation rule
         final maxLengthRule = field.validationRules
             .where((rule) => rule.type == 'maxLength')
@@ -265,13 +266,13 @@ class FormUtils {
   /// Gets keyboard type based on field type
   static TextInputType getKeyboardType(FormField field) {
     switch (field.type) {
-      case 'email':
+      case FieldType.email:
         return TextInputType.emailAddress;
-      case 'phone':
+      case FieldType.phone:
         return TextInputType.phone;
-      case 'number':
+      case FieldType.number:
         return TextInputType.number;
-      case 'textarea':
+      case FieldType.textarea:
         return TextInputType.multiline;
       default:
         return TextInputType.text;
@@ -303,7 +304,7 @@ class FormUtils {
     
     if (commonFieldData != null) {
       // Check for field variations
-      final fieldVariationData = formConfig.fieldVariations[fieldId] as Map<String, dynamic>?;
+      final fieldVariationData = formConfig.fieldVariations?[fieldId] as Map<String, dynamic>?;
       return mergeCommonField(commonFieldData, fieldVariationData);
     }
     

@@ -30,12 +30,18 @@ FormField _$FormFieldFromJson(Map<String, dynamic> json) => FormField(
   validationRules: (json['validationRules'] as List<dynamic>)
       .map((e) => ValidationRule.fromJson(e as Map<String, dynamic>))
       .toList(),
+  dependencies: (json['dependencies'] as List<dynamic>?)
+      ?.map((e) => FieldDependencyCondition.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  dataSource: json['dataSource'] as Map<String, dynamic>?,
 );
 
 Map<String, dynamic> _$FormFieldToJson(FormField instance) => <String, dynamic>{
   'fieldId': instance.fieldId,
   'type': FormField._fieldTypeToJson(instance.type),
   'label': instance.label,
+  'dependencies': ?instance.dependencies?.map((e) => e.toJson()).toList(),
+  'dataSource': ?instance.dataSource,
   'placeholder': instance.placeholder,
   'required': instance.required,
   'properties': instance.properties,

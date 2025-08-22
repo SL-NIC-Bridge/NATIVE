@@ -7,7 +7,7 @@ import 'form_config_model.dart';
 final formConfigProvider = FutureProvider<FormConfig>((ref) async {
   try {
     developer.log('Loading form configuration...', name: 'FormConfig');
-    final configString = await rootBundle.loadString('assets/config/form_config.json');
+    final configString = await rootBundle.loadString('assets/config/form_config_new.json');
     developer.log('Configuration file loaded successfully', name: 'FormConfig');
 
     final configJson = json.decode(configString) as Map<String, dynamic>;

@@ -1,0 +1,850 @@
+{
+  "commonFields": {
+    "applicantPhoto": {
+      "fieldId": "applicantPhoto",
+      "type": "file",
+      "label": "Applicant Photograph",
+      "placeholder": "Upload your recent photograph",
+      "required": true,
+      "properties": {
+        "allowedTypes": ["image/jpeg", "image/png"],
+        "maxSize": 5242880,
+        "maxWidth": 1200,
+        "maxHeight": 1200,
+        "aspectRatio": 1,
+        "guidelines": [
+          "Photo must be in color with white background",
+          "Face should be clearly visible",
+          "No headwear (except for religious purposes)",
+          "Photo should be recent (taken within last 6 months)"
+        ]
+      },
+      "validationRules": []
+    },
+    "familyName": {
+      "fieldId": "familyName",
+      "type": "text",
+      "label": "Family Name (in English Block Letters)",
+      "placeholder": "Enter your family name",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "pattern",
+          "value": "^[A-Z\\s]+$",
+          "message": "Please use only UPPERCASE letters"
+        }
+      ]
+    },
+    "name": {
+      "fieldId": "name",
+      "type": "text",
+      "label": "Name (in English Block Letters)",
+      "placeholder": "Enter your name",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "pattern",
+          "value": "^[A-Z\\s]+$",
+          "message": "Please use only UPPERCASE letters"
+        }
+      ]
+    },
+    "surname": {
+      "fieldId": "surname",
+      "type": "text",
+      "label": "Surname (in English Block Letters)",
+      "placeholder": "Enter your surname",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "pattern",
+          "value": "^[A-Z\\s]+$",
+          "message": "Please use only UPPERCASE letters"
+        }
+      ]
+    },
+    "sex": {
+      "fieldId": "sex",
+      "type": "radio",
+      "label": "Sex",
+      "required": true,
+      "properties": {
+        "options": [
+          {"value": "male", "label": "Male"},
+          {"value": "female", "label": "Female"}
+        ]
+      },
+      "validationRules": []
+    },
+    "houseNumber": {
+      "fieldId": "houseNumber",
+      "type": "text",
+      "label": "House Name/Number",
+      "placeholder": "Enter house name or number",
+      "required": true,
+      "properties": {},
+      "validationRules": []
+    },
+    "street": {
+      "fieldId": "street",
+      "type": "text",
+      "label": "Road/Street/Lane",
+      "placeholder": "Enter road/street/lane name",
+      "required": true,
+      "properties": {},
+      "validationRules": []
+    },
+    "city": {
+      "fieldId": "city",
+      "type": "text",
+      "label": "Village/City",
+      "placeholder": "Enter village/city name",
+      "required": true,
+      "properties": {},
+      "validationRules": []
+    },
+    "postalCode": {
+      "fieldId": "postalCode",
+      "type": "text",
+      "label": "Postal Code",
+      "placeholder": "Enter postal code",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "pattern",
+          "value": "^[0-9]{5}$",
+          "message": "Please enter a valid postal code"
+        }
+      ]
+    },
+    "differentPostalAddress": {
+      "fieldId": "differentPostalAddress",
+      "type": "checkbox",
+      "label": "Is your postal address different?",
+      "required": false,
+      "properties": {},
+      "validationRules": []
+    },
+    "postalHouseNumber": {
+      "fieldId": "postalHouseNumber",
+      "type": "text",
+      "label": "Postal Address - House Name/Number",
+      "placeholder": "Enter house name or number",
+      "required": true,
+      "properties": {},
+      "validationRules": [],
+      "dependencies": [
+        {
+          "field": "differentPostalAddress",
+          "value": true,
+          "behavior": "show"
+        }
+      ]
+    },
+    "postalStreet": {
+      "fieldId": "postalStreet",
+      "type": "text",
+      "label": "Postal Address - Road/Street/Lane",
+      "placeholder": "Enter road/street/lane name",
+      "required": true,
+      "properties": {},
+      "validationRules": [],
+      "dependencies": [
+        {
+          "field": "differentPostalAddress",
+          "value": true,
+          "behavior": "show"
+        }
+      ]
+    },
+    "postalCity": {
+      "fieldId": "postalCity",
+      "type": "text",
+      "label": "Postal Address - Village/City",
+      "placeholder": "Enter village/city name",
+      "required": true,
+      "properties": {},
+      "validationRules": [],
+      "dependencies": [
+        {
+          "field": "differentPostalAddress",
+          "value": true,
+          "behavior": "show"
+        }
+      ]
+    },
+    "postalPostalCode": {
+      "fieldId": "postalPostalCode",
+      "type": "text",
+      "label": "Postal Address - Postal Code",
+      "placeholder": "Enter postal code",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "pattern",
+          "value": "^[0-9]{5}$",
+          "message": "Please enter a valid postal code"
+        }
+      ],
+      "dependencies": [
+        {
+          "field": "differentPostalAddress",
+          "value": true,
+          "behavior": "show"
+        }
+      ]
+    },
+    "phone": {
+      "fieldId": "phone",
+      "type": "phone",
+      "label": "Mobile Number",
+      "placeholder": "Enter your mobile number",
+      "required": true,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "pattern",
+          "value": "^(\\+94|0)[0-9]{9}$",
+          "message": "Please enter a valid Sri Lankan phone number"
+        }
+      ]
+    },
+    "email": {
+      "fieldId": "email",
+      "type": "email",
+      "label": "Email Address",
+      "placeholder": "Enter your email address",
+      "required": false,
+      "properties": {},
+      "validationRules": [
+        {
+          "type": "email",
+          "value": true,
+          "message": "Please enter a valid email address"
+        }
+      ]
+    },
+    "signature": {
+      "fieldId": "signature",
+      "type": "signature",
+      "label": "Applicant's Signature",
+      "required": true,
+      "properties": {
+        "backgroundColor": "FFFFFFFF",
+        "penColor": "FF000000",
+        "strokeWidth": 2.0,
+        "guidelines": "Please sign within the box using the mouse or touch screen"
+      },
+      "validationRules": []
+    },
+    "declaration": {
+      "fieldId": "declaration",
+      "type": "checkbox",
+      "label": "I hereby declare that the particulars given above are true and accurate to the best of my knowledge and belief.",
+      "required": true,
+      "properties": {},
+      "validationRules": []
+    },
+    "declarationDate": {
+      "fieldId": "declarationDate",
+      "type": "date",
+      "label": "Date of Declaration",
+      "required": true,
+      "properties": {
+        "defaultToToday": true,
+        "maxDate": "today"
+      },
+      "validationRules": []
+    },
+    "receiptNumber": {
+      "fieldId": "receiptNumber",
+      "type": "text",
+      "label": "Receipt / Certificate Number",
+      "placeholder": "Enter the payment receipt number",
+      "required": true,
+      "properties": {},
+      "validationRules": []
+    },
+    "receiptUpload": {
+      "fieldId": "receiptUpload",
+      "type": "file",
+      "label": "Upload Scan of Receipt or Stamps",
+      "placeholder": "Upload your payment receipt",
+      "required": true,
+      "properties": {
+        "allowedTypes": ["image/jpeg", "image/png", "application/pdf"],
+        "maxSize": 5242880
+      },
+      "validationRules": []
+    }
+  },
+  "formTypes": [
+    {
+      "id": "new_nic",
+      "name": "New NIC Application",
+      "description": "Apply for your first National Identity Card"
+    },
+    {
+      "id": "replace_nic",
+      "name": "Renew or Replace NIC",
+      "description": "Replace lost, damaged, or expired NIC"
+    },
+    {
+      "id": "correct_nic",
+      "name": "Correct NIC Information",
+      "description": "Make corrections to your existing NIC"
+    }
+  ],
+  "formConfigs": {
+    "new_nic": {
+      "id": "new-nic-form",
+      "title": "New NIC Application",
+      "description": "Apply for your first National Identity Card",
+      "steps": [
+        {
+          "id": "personal-info",
+          "title": "Personal Information",
+          "description": "Provide your basic personal details",
+          "fields": [
+            {"$ref": "#/commonFields/applicantPhoto"},
+            {"$ref": "#/commonFields/familyName"},
+            {"$ref": "#/commonFields/name"},
+            {"$ref": "#/commonFields/surname"},
+            {"$ref": "#/commonFields/sex"},
+            {
+              "fieldId": "dateOfBirth",
+              "type": "date",
+              "label": "Date of Birth",
+              "required": true,
+              "properties": {
+                "maxDate": "today-16y"
+              },
+              "validationRules": []
+            },
+            {
+              "fieldId": "birthCertificateNo",
+              "type": "text",
+              "label": "Birth Certificate Number",
+              "placeholder": "Enter your birth certificate number",
+              "required": true,
+              "properties": {},
+              "validationRules": []
+            },
+            {
+              "fieldId": "birthPlace",
+              "type": "text",
+              "label": "Place/Town of Birth",
+              "placeholder": "Enter place of birth as per birth certificate",
+              "required": true,
+              "properties": {},
+              "validationRules": []
+            },
+            {
+              "fieldId": "birthDivision",
+              "type": "text",
+              "label": "Division of Birth",
+              "placeholder": "Enter division of birth",
+              "required": true,
+              "properties": {},
+              "validationRules": []
+            },
+            {
+              "fieldId": "birthDistrict",
+              "type": "text",
+              "label": "District of Birth",
+              "placeholder": "Enter district of birth",
+              "required": true,
+              "properties": {},
+              "validationRules": []
+            },
+            {
+              "fieldId": "occupation",
+              "type": "text",
+              "label": "Profession/Occupation",
+              "placeholder": "Enter your profession or occupation",
+              "required": true,
+              "properties": {},
+              "validationRules": []
+            }
+          ]
+        },
+        {
+          "id": "address-info",
+          "title": "Address Information",
+          "description": "Provide your address details",
+          "fields": [
+            {"$ref": "#/commonFields/houseNumber"},
+            {"$ref": "#/commonFields/street"},
+            {"$ref": "#/commonFields/city"},
+            {"$ref": "#/commonFields/postalCode"},
+            {"$ref": "#/commonFields/differentPostalAddress"},
+            {"$ref": "#/commonFields/postalHouseNumber"},
+            {"$ref": "#/commonFields/postalStreet"},
+            {"$ref": "#/commonFields/postalCity"},
+            {"$ref": "#/commonFields/postalPostalCode"},
+            {"$ref": "#/commonFields/phone"},
+            {"$ref": "#/commonFields/email"}
+          ]
+        },
+        {
+          "id": "documents",
+          "title": "Supporting Documents",
+          "description": "Upload required documents",
+          "fields": [
+            {
+              "fieldId": "birthDocType",
+              "type": "select",
+              "label": "Document Type",
+              "required": true,
+              "properties": {
+                "options": [
+                  {"value": "birth_cert", "label": "Birth Certificate"},
+                  {"value": "affidavit", "label": "Affidavit and Probable Age Certificate"}
+                ]
+              },
+              "validationRules": []
+            },
+            {
+              "fieldId": "birthCertUpload",
+              "type": "file",
+              "label": "Upload Birth Certificate",
+              "required": true,
+              "properties": {
+                "allowedTypes": ["image/jpeg", "image/png", "application/pdf"],
+                "maxSize": 5242880
+              },
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "birthDocType",
+                  "value": "birth_cert",
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "affidavitUpload",
+              "type": "file",
+              "label": "Upload Affidavit / Other Proof",
+              "required": true,
+              "properties": {
+                "allowedTypes": ["image/jpeg", "image/png", "application/pdf"],
+                "maxSize": 5242880
+              },
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "birthDocType",
+                  "value": "affidavit",
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "bornAbroad",
+              "type": "checkbox",
+              "label": "Were you born outside of Sri Lanka?",
+              "required": false,
+              "properties": {},
+              "validationRules": []
+            },
+            {
+              "fieldId": "countryOfBirth",
+              "type": "text",
+              "label": "Country of Birth",
+              "placeholder": "Enter country of birth",
+              "required": true,
+              "properties": {},
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "bornAbroad",
+                  "value": true,
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "citizenshipCertNo",
+              "type": "text",
+              "label": "Citizenship Certificate Number",
+              "placeholder": "Enter citizenship certificate number",
+              "required": true,
+              "properties": {},
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "bornAbroad",
+                  "value": true,
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "citizenshipCertUpload",
+              "type": "file",
+              "label": "Upload Citizenship Certificate",
+              "required": true,
+              "properties": {
+                "allowedTypes": ["image/jpeg", "image/png", "application/pdf"],
+                "maxSize": 5242880
+              },
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "bornAbroad",
+                  "value": true,
+                  "behavior": "show"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "declaration",
+          "title": "Declaration & Payment",
+          "description": "Review and submit your application",
+          "fields": [
+            {"$ref": "#/commonFields/receiptNumber"},
+            {"$ref": "#/commonFields/receiptUpload"},
+            {"$ref": "#/commonFields/declaration"},
+            {"$ref": "#/commonFields/signature"},
+            {"$ref": "#/commonFields/declarationDate"}
+          ]
+        }
+      ]
+    },
+    "replace_nic": {
+      "id": "replace-nic-form",
+      "title": "NIC Replacement Application",
+      "description": "Replace your lost, damaged, or expired National Identity Card",
+      "steps": [
+        {
+          "id": "personal-info",
+          "title": "Personal Information",
+          "description": "Provide your personal details",
+          "fields": [
+            {"$ref": "#/commonFields/applicantPhoto"},
+            {"$ref": "#/commonFields/familyName"},
+            {"$ref": "#/commonFields/name"},
+            {"$ref": "#/commonFields/surname"},
+            {"$ref": "#/commonFields/sex"},
+            {
+              "fieldId": "existingNicNumber",
+              "type": "text",
+              "label": "Existing/Previous Identity Card Number",
+              "placeholder": "Enter your NIC number",
+              "required": true,
+              "properties": {},
+              "validationRules": [
+                {
+                  "type": "pattern",
+                  "value": "^([0-9]{9}[vVxX]|[0-9]{12})$",
+                  "message": "Please enter a valid NIC number"
+                }
+              ]
+            },
+            {
+              "fieldId": "previousCardIssueDate",
+              "type": "date",
+              "label": "Date of Issue of Previous Card",
+              "required": false,
+              "properties": {
+                "maxDate": "today"
+              },
+              "validationRules": []
+            }
+          ]
+        },
+        {
+          "id": "address-info",
+          "title": "Address Information",
+          "description": "Provide your address details",
+          "fields": [
+            {"$ref": "#/commonFields/houseNumber"},
+            {"$ref": "#/commonFields/street"},
+            {"$ref": "#/commonFields/city"},
+            {"$ref": "#/commonFields/postalCode"},
+            {"$ref": "#/commonFields/differentPostalAddress"},
+            {"$ref": "#/commonFields/postalHouseNumber"},
+            {"$ref": "#/commonFields/postalStreet"},
+            {"$ref": "#/commonFields/postalCity"},
+            {"$ref": "#/commonFields/postalPostalCode"},
+            {"$ref": "#/commonFields/phone"},
+            {"$ref": "#/commonFields/email"}
+          ]
+        },
+        {
+          "id": "replacement-reason",
+          "title": "Reason for Replacement",
+          "description": "Provide details about why you need a replacement",
+          "fields": [
+            {
+              "fieldId": "replacementReason",
+              "type": "radio",
+              "label": "Reason for Renewal/Replacement",
+              "required": true,
+              "properties": {
+                "options": [
+                  {"value": "lost", "label": "My card is lost or stolen"},
+                  {"value": "damaged", "label": "My card is damaged or illegible"},
+                  {"value": "expired", "label": "I need to renew the validity period"}
+                ]
+              },
+              "validationRules": []
+            },
+            {
+              "fieldId": "policeReport",
+              "type": "file",
+              "label": "Upload Police Report",
+              "required": true,
+              "properties": {
+                "allowedTypes": ["image/jpeg", "image/png", "application/pdf"],
+                "maxSize": 5242880
+              },
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "replacementReason",
+                  "value": "lost",
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "damagedCard",
+              "type": "file",
+              "label": "Upload Photo of Damaged Card",
+              "required": true,
+              "properties": {
+                "allowedTypes": ["image/jpeg", "image/png"],
+                "maxSize": 5242880
+              },
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "replacementReason",
+                  "value": "damaged",
+                  "behavior": "show"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "declaration",
+          "title": "Declaration & Payment",
+          "description": "Review and submit your application",
+          "fields": [
+            {"$ref": "#/commonFields/receiptNumber"},
+            {"$ref": "#/commonFields/receiptUpload"},
+            {"$ref": "#/commonFields/declaration"},
+            {"$ref": "#/commonFields/signature"},
+            {"$ref": "#/commonFields/declarationDate"}
+          ]
+        }
+      ]
+    },
+    "correct_nic": {
+      "id": "correct-nic-form",
+      "title": "NIC Information Correction",
+      "description": "Request correction of information on your existing NIC",
+      "steps": [
+        {
+          "id": "personal-info",
+          "title": "Personal Information",
+          "description": "Provide your current details",
+          "fields": [
+            {"$ref": "#/commonFields/applicantPhoto"},
+            {"$ref": "#/commonFields/familyName"},
+            {"$ref": "#/commonFields/name"},
+            {"$ref": "#/commonFields/surname"},
+            {"$ref": "#/commonFields/sex"},
+            {
+              "fieldId": "existingNicNumber",
+              "type": "text",
+              "label": "Existing Identity Card Number",
+              "placeholder": "Enter your NIC number",
+              "required": true,
+              "properties": {},
+              "validationRules": [
+                {
+                  "type": "pattern",
+                  "value": "^([0-9]{9}[vVxX]|[0-9]{12})$",
+                  "message": "Please enter a valid NIC number"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "correction-type",
+          "title": "Information to Correct",
+          "description": "Select what information needs to be corrected",
+          "fields": [
+            {
+              "fieldId": "correctionsNeeded",
+              "type": "checkbox",
+              "label": "What information do you need to correct?",
+              "required": true,
+              "properties": {
+                "options": [
+                  {"value": "name", "label": "Name"},
+                  {"value": "occupation", "label": "Occupation"},
+                  {"value": "husband_name", "label": "Add Husband's Name"},
+                  {"value": "priest_to_lay", "label": "Change from Priest to Lay Name"},
+                  {"value": "lay_to_priest", "label": "Change from Lay to Priest Name"}
+                ]
+              },
+              "validationRules": []
+            }
+          ]
+        },
+        {
+          "id": "new-information",
+          "title": "New Information",
+          "description": "Provide the corrected information",
+          "fields": [
+            {
+              "fieldId": "newFamilyName",
+              "type": "text",
+              "label": "New Family Name",
+              "required": true,
+              "properties": {},
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "correctionsNeeded",
+                  "value": "name",
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "nameChangeDoc",
+              "type": "file",
+              "label": "Upload Supporting Document for Name Change",
+              "required": true,
+              "properties": {
+                "allowedTypes": ["image/jpeg", "image/png", "application/pdf"],
+                "maxSize": 5242880
+              },
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "correctionsNeeded",
+                  "value": "name",
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "newOccupation",
+              "type": "text",
+              "label": "New Occupation/Profession",
+              "required": true,
+              "properties": {},
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "correctionsNeeded",
+                  "value": "occupation",
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "occupationProof",
+              "type": "file",
+              "label": "Upload Proof of Occupation",
+              "required": true,
+              "properties": {
+                "allowedTypes": ["image/jpeg", "image/png", "application/pdf"],
+                "maxSize": 5242880
+              },
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "correctionsNeeded",
+                  "value": "occupation",
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "marriageCertificate",
+              "type": "file",
+              "label": "Upload Marriage Certificate",
+              "required": true,
+              "properties": {
+                "allowedTypes": ["image/jpeg", "image/png", "application/pdf"],
+                "maxSize": 5242880
+              },
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "correctionsNeeded",
+                  "value": "husband_name",
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "disrobeCertificate",
+              "type": "file",
+              "label": "Upload Certificate of Disrobe",
+              "required": true,
+              "properties": {
+                "allowedTypes": ["image/jpeg", "image/png", "application/pdf"],
+                "maxSize": 5242880
+              },
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "correctionsNeeded",
+                  "value": "priest_to_lay",
+                  "behavior": "show"
+                }
+              ]
+            },
+            {
+              "fieldId": "ordinationCertificate",
+              "type": "file",
+              "label": "Upload Certificate of Ordination",
+              "required": true,
+              "properties": {
+                "allowedTypes": ["image/jpeg", "image/png", "application/pdf"],
+                "maxSize": 5242880
+              },
+              "validationRules": [],
+              "dependencies": [
+                {
+                  "field": "correctionsNeeded",
+                  "value": "lay_to_priest",
+                  "behavior": "show"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "declaration",
+          "title": "Declaration & Payment",
+          "description": "Review and submit your application",
+          "fields": [
+            {"$ref": "#/commonFields/receiptNumber"},
+            {"$ref": "#/commonFields/receiptUpload"},
+            {"$ref": "#/commonFields/declaration"},
+            {"$ref": "#/commonFields/signature"},
+            {"$ref": "#/commonFields/declarationDate"}
+          ]
+        }
+      ]
+    }
+  }
+}

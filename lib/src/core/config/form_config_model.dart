@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'field_type.dart';
+import 'field_dependency.dart';
 import 'form_config_entry.dart';
 
 part 'form_config_model.g.dart';
@@ -39,6 +40,8 @@ class FormField {
   @JsonKey(fromJson: FormField._fieldTypeFromJson, toJson: FormField._fieldTypeToJson)
   final FieldType type;
   final String label;
+  final List<FieldDependencyCondition>? dependencies;
+  final Map<String, dynamic>? dataSource;
 
   static FieldType _fieldTypeFromJson(String value) {
     return FieldType.values.firstWhere(
@@ -61,6 +64,8 @@ class FormField {
     required this.required,
     required this.properties,
     required this.validationRules,
+    this.dependencies,
+    this.dataSource,
   });
 
   factory FormField.fromJson(Map<String, dynamic> json) => _$FormFieldFromJson(json);
