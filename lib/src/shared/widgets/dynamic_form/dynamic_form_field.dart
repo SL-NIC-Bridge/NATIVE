@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sl_nic_bridge/src/core/config/field_type.dart';
@@ -476,41 +477,37 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
   }
 
   Widget _buildSignatureField() {
+    // The form state stores the signature as a Map. We need to extract the bytes.
+    final Uint8List? signatureBytes =
+        (widget.value is Map) ? widget.value['bytes'] as Uint8List? : null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SignaturePad(
-          label: widget.config.label,
-          placeholder: widget.config.placeholder,
-          backgroundColor: Color(int.parse(
-            widget.config.properties['backgroundColor']?.toString() ?? 'FFFFFFFF',
-            radix: 16,
-          )),
-          penColor: Color(int.parse(
-            widget.config.properties['penColor']?.toString() ?? 'FF000000',
-            radix: 16,
-          )),
-          strokeWidth: (widget.config.properties['strokeWidth'] as num?)?.toDouble() ?? 2.0,
-          onSigned: (data) {
-            widget.onChanged({
-              'bytes': data,
-              'format': 'image/png',
-              'timestamp': DateTime.now().toIso8601String(),
-            });
-          },
-          onClear: () {
-            widget.onChanged(null);
-          },
+        Text(
+          widget.config.label,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
         ),
-        if (widget.errorText != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            widget.errorText!,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
-          ),
-        ],
+        const SizedBox(height: 8),
+        SignaturePad(
+          initialValue: signatureBytes,
+          onChanged: (data) {
+            if (data != null) {
+              // To maintain consistency, wrap the signature bytes in a map.
+              widget.onChanged({
+                'bytes': data,
+                'format': 'image/png',
+                'timestamp': DateTime.now().toIso8601String(),
+              });
+            } else {
+              // When cleared, set the form value to null.
+              widget.onChanged(null);
+            }
+          },
+          errorText: widget.errorText,
+        ),
       ],
     );
   }
