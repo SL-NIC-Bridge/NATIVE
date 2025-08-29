@@ -188,8 +188,8 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
       label: widget.config.label,
       hintText: widget.config.placeholder,
       keyboardType: _getKeyboardType(),
-      validator: _getValidator(),
-      readOnly: false, // We handle disabling through the wrapper
+      errorText: widget.errorText,
+      // The validator is now handled by the parent form state, which passes down errorText.
       onTap: widget.config.type == FieldType.phone ? null : () {
         // Handle any special tap behavior
       },
@@ -205,8 +205,8 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
       label: widget.config.label,
       hintText: widget.config.placeholder,
       keyboardType: TextInputType.number,
-      validator: _getValidator(),
-      readOnly: false, // We handle disabling through the wrapper
+      errorText: widget.errorText,
+      // The validator is now handled by the parent form state, which passes down errorText.
       onChanged: (value) {
         widget.onChanged(value);
       },
@@ -218,9 +218,8 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
       controller: _controller,
       label: widget.config.label,
       hintText: widget.config.placeholder,
-      maxLines: widget.config.properties['maxLines'] ?? 3,
-      validator: _getValidator(),
-      readOnly: false, // We handle disabling through the wrapper
+      maxLines: (widget.config.properties['maxLines'] as num?)?.toInt() ?? 3,
+      errorText: widget.errorText,
       onChanged: (value) {
         widget.onChanged(value);
       },
@@ -233,6 +232,7 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
       label: widget.config.label,
       hintText: widget.config.placeholder,
       readOnly: true,
+      errorText: widget.errorText,
       onTap: () async {
         final minDate = DateTime.tryParse(widget.config.properties['minDate']?.toString() ?? '') ?? DateTime(1900);
         final maxDate = DateTime.tryParse(widget.config.properties['maxDate']?.toString() ?? '') ?? DateTime(2100);
@@ -250,7 +250,6 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
           widget.onChanged(dateString);
         }
       },
-      validator: _getValidator(),
     );
   }
 
@@ -318,7 +317,8 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
           initialValue: widget.value?.toString(),
           hint: Text(widget.config.placeholder ?? ''),
           decoration: const InputDecoration(),
-          validator: _getValidator(),
+          // The validator is handled by the parent form state, which passes down errorText.
+          // We display it manually below to match other custom fields.
           items: options.map((option) {
             return DropdownMenuItem<String>(
               value: option['value'].toString(),
@@ -467,6 +467,7 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
       placeholder: widget.config.placeholder,
       properties: widget.config.properties,
       initialValue: widget.value,
+      errorText: widget.errorText,
       onFileSelected: (fileData) {
         widget.onChanged(fileData);
       },
@@ -525,64 +526,4 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
     }
   }
 
-  String? Function(String?)? _getValidator() {
-    return (value) {
-      // Check required validation
-      if (widget.config.required && (value?.isEmpty ?? true)) {
-        return '${widget.config.label} is required';
-      }
-
-      // Check other validation rules
-      for (final rule in widget.config.validationRules) {
-        final error = _validateRule(value, rule);
-        if (error != null) return error;
-      }
-
-      return null;
-    };
-  }
-
-  String? _validateRule(String? value, form_config.ValidationRule rule) {
-    if (value?.isEmpty ?? true) return null;
-
-    switch (rule.type) {
-      case 'minLength':
-        if (value!.length < (rule.value as num).toInt()) {
-          return rule.message;
-        }
-        break;
-      case 'maxLength':
-        if (value!.length > (rule.value as num).toInt()) {
-          return rule.message;
-        }
-        break;
-      case 'pattern':
-        if (!RegExp(rule.value.toString()).hasMatch(value!)) {
-          return rule.message;
-        }
-        break;
-      case 'email':
-        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
-          return rule.message;
-        }
-        break;
-      case 'min':
-        if (widget.config.type == FieldType.number) {
-          final numValue = double.tryParse(value!);
-          if (numValue != null && numValue < (rule.value as num)) {
-            return rule.message;
-          }
-        }
-        break;
-      case 'max':
-        if (widget.config.type == FieldType.number) {
-          final numValue = double.tryParse(value!);
-          if (numValue != null && numValue > (rule.value as num)) {
-            return rule.message;
-          }
-        }
-        break;
-    }
-    return null;
-  }
 }

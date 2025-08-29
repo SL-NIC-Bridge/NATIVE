@@ -7,6 +7,7 @@ import 'package:path/path.dart' as path;
 class FileUploadField extends StatefulWidget {
   final String label;
   final String? placeholder;
+  final String? errorText;
   final Function(Map<String, dynamic> fileData) onFileSelected;
   final Function() onFileCleared;
   final Map<String, dynamic>? initialValue;
@@ -16,6 +17,7 @@ class FileUploadField extends StatefulWidget {
     super.key,
     required this.label,
     this.placeholder,
+    this.errorText,
     required this.onFileSelected,
     required this.onFileCleared,
     this.initialValue,
@@ -238,7 +240,11 @@ class _FileUploadFieldState extends State<FileUploadField> {
                 width: double.infinity,
                 height: 200,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(
+                    color: widget.errorText != null
+                        ? Theme.of(context).colorScheme.error
+                        : Colors.grey.shade300,
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: ClipRRect(
@@ -273,7 +279,11 @@ class _FileUploadFieldState extends State<FileUploadField> {
             width: double.infinity,
             height: 120,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(
+                color: widget.errorText != null
+                    ? Theme.of(context).colorScheme.error
+                    : Colors.grey.shade300,
+              ),
               borderRadius: BorderRadius.circular(8),
             ),
             child: _isLoading
@@ -292,6 +302,17 @@ class _FileUploadFieldState extends State<FileUploadField> {
                       ],
                     ),
                   ),
+          ),
+        if (widget.errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, left: 12.0),
+            child: Text(
+              widget.errorText!,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontSize: 12,
+              ),
+            ),
           ),
       ],
     );
