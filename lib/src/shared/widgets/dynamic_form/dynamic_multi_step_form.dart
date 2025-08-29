@@ -237,6 +237,7 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
           Expanded(
             child: PageView.builder(
               controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
               onPageChanged: (index) {
                 setState(() => _currentStep = index);
               },
