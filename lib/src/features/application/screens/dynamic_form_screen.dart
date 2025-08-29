@@ -42,7 +42,7 @@ class DynamicFormScreen extends ConsumerWidget {
             await _handleFormSubmission(context, ref, formData, formType);
           },
           onCancel: () {
-            context.go(AppRoutes.applicationForm);
+            context.go(AppRoutes.dashboard);
           },
         );
       },
