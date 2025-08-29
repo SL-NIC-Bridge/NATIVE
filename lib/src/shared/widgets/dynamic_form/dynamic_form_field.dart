@@ -478,10 +478,6 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
   }
 
   Widget _buildSignatureField() {
-    // The form state stores the signature as a Map. We need to extract the bytes.
-    final Uint8List? signatureBytes =
-        (widget.value is Map) ? widget.value['bytes'] as Uint8List? : null;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -493,19 +489,8 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
         ),
         const SizedBox(height: 8),
         SignaturePad(
-          initialValue: signatureBytes,
           onChanged: (data) {
-            if (data != null) {
-              // To maintain consistency, wrap the signature bytes in a map.
-              widget.onChanged({
-                'bytes': data,
-                'format': 'image/png',
-                'timestamp': DateTime.now().toIso8601String(),
-              });
-            } else {
-              // When cleared, set the form value to null.
-              widget.onChanged(null);
-            }
+            widget.onChanged(data);
           },
           errorText: widget.errorText,
         ),

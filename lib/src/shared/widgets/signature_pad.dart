@@ -1,16 +1,15 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:signature/signature.dart';
 import './custom_button.dart';
 
 class SignaturePad extends StatefulWidget {
-  final Uint8List? initialValue;
-  final Function(Uint8List? data) onChanged;
+  final Function(Map<String, dynamic>? data) onChanged;
   final String? errorText;
-
+  
   const SignaturePad({
     super.key,
-    this.initialValue,
     required this.onChanged,
     this.errorText,
   });
@@ -20,65 +19,130 @@ class SignaturePad extends StatefulWidget {
 }
 
 class _SignaturePadState extends State<SignaturePad> {
-  late final SignatureController _controller;
+  final SignatureController _drawController = SignatureController(
+    penStrokeWidth: 3,
+    penColor: const Color.fromARGB(255, 7, 49, 85),
+    exportBackgroundColor: Colors.white,
+  );
+
+  // State to hold the final signature data, whether drawn or uploaded
+  Uint8List? _signatureBytes;
+  String _signatureSource = 'none'; // 'drawn' or 'uploaded'
 
   @override
   void initState() {
     super.initState();
-    _controller = SignatureController(
-      penStrokeWidth: 3,
-      penColor: Colors.black,
-      exportBackgroundColor: Colors.transparent,
-      // TODO: If you store signature points, you can load them here.
-      // points: _controller.fromPoints(widget.initialValue),
-    );
+    _drawController.onDrawEnd = _onDrawEnd;
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _drawController.dispose();
     super.dispose();
   }
 
+  // Called when user finishes drawing
+  Future<void> _onDrawEnd() async {
+    if (_drawController.isNotEmpty) {
+      final data = await _drawController.toPngBytes();
+      if (data != null && mounted) {
+        setState(() {
+          _signatureBytes = data;
+          _signatureSource = 'drawn';
+        });
+        _notifyParent();
+      }
+    }
+  }
+
+  // Called when user clicks "Upload"
+  Future<void> _uploadSignature() async {
+    final picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        if (mounted) {
+          setState(() {
+            _signatureBytes = bytes;
+            _signatureSource = 'uploaded';
+            _drawController.clear(); // Clear canvas if image is uploaded
+          });
+          _notifyParent();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload image: $e')),
+        );
+      }
+    }
+  }
+
+  // Called when user clicks "Clear"
   void _clearSignature() {
-    _controller.clear();
+    setState(() {
+      _signatureBytes = null;
+      _signatureSource = 'none';
+      _drawController.clear();
+    });
     widget.onChanged(null);
+  }
+
+  // Central place to notify the parent form
+  void _notifyParent() {
+    if (_signatureBytes == null) {
+      widget.onChanged(null);
+    } else {
+      widget.onChanged({
+        'bytes': _signatureBytes,
+        'format': 'image/png', // Always submitting as an image
+        'source': _signatureSource,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final hasError = widget.errorText != null;
+    final theme = Theme.of(context);
+    final bool hasSignature = _signatureBytes != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // THE FIX:
-        // The Signature widget must have a bounded height when inside a vertically
-        // scrolling view. We wrap it in an AspectRatio to give it a fixed shape.
         AspectRatio(
           aspectRatio: 16 / 9,
           child: Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+              color: theme.colorScheme.surface,
               border: Border.all(
-                color: widget.errorText != null
-                    ? Theme.of(context).colorScheme.error
-                    : Theme.of(context).colorScheme.outline,
+                color: hasError ? theme.colorScheme.error : theme.colorScheme.outline,
                 width: 1,
               ),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Signature(
-              controller: _controller,
-              backgroundColor: Colors.transparent,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              // Show uploaded image if it exists, otherwise show the drawing canvas
+              child: _signatureSource == 'uploaded' && _signatureBytes != null
+                  ? Image.memory(_signatureBytes!, fit: BoxFit.contain)
+                  : Signature(
+                      controller: _drawController,
+                      backgroundColor: Colors.white70,
+                    ),
             ),
           ),
         ),
-        if (widget.errorText != null)
+        if (hasError)
           Padding(
             padding: const EdgeInsets.only(top: 8.0, left: 12.0),
             child: Text(
               widget.errorText!,
               style: TextStyle(
-                color: Theme.of(context).colorScheme.error,
+                color: theme.colorScheme.error,
                 fontSize: 12,
               ),
             ),
@@ -88,9 +152,17 @@ class _SignaturePadState extends State<SignaturePad> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             CustomButton(
-              onPressed: _clearSignature,
+              onPressed: _uploadSignature,
+              text: 'Upload',
+              type: ButtonType.text,
+              // icon: Icons.upload_file,
+            ),
+            const SizedBox(width: 8),
+            CustomButton(
+              onPressed: hasSignature ? _clearSignature : null,
               text: 'Clear',
               type: ButtonType.text,
+              // icon: Icons.delete_outline,
             ),
           ],
         ),
@@ -98,4 +170,3 @@ class _SignaturePadState extends State<SignaturePad> {
     );
   }
 }
-
