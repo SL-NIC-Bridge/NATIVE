@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:sl_nic_bridge/src/core/config/form_config_model.dart' as config;
 import 'package:sl_nic_bridge/src/core/config/form_config_entry.dart';
+import 'package:sl_nic_bridge/src/shared/utils/dependency_evaluator.dart';
 import 'dynamic_form_field.dart';
 import '../custom_button.dart';
+
 
 class DynamicMultiStepForm extends StatefulWidget {
   final config.FormConfig formConfig;
@@ -11,6 +13,7 @@ class DynamicMultiStepForm extends StatefulWidget {
   final Function(Map<String, dynamic> formData) onSubmit;
   final VoidCallback? onCancel;
 
+
   const DynamicMultiStepForm({
     super.key,
     required this.formConfig,
@@ -18,6 +21,7 @@ class DynamicMultiStepForm extends StatefulWidget {
     this.initialData,
     required this.onSubmit,
     this.onCancel,
+
   });
 
   @override
@@ -59,8 +63,14 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
   bool _validateCurrentStep() {
     final currentStepConfig = _formConfigEntry.steps[_currentStep];
     final errors = <String, String>{};
+    final evaluator = DependencyEvaluator(_formData);
     
     for (final field in currentStepConfig.fields) {
+      if (!evaluator.isVisible(field) || !evaluator.isEnabled(field)) {
+        _formData.remove(field.fieldId);
+        continue;
+      }
+
       final value = _formData[field.fieldId];
       
       if (field.required && (value == null || value.toString().isEmpty)) {
