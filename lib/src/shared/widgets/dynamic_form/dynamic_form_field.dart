@@ -315,7 +315,7 @@ class _DynamicFormFieldState extends ConsumerState<DynamicFormField> {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           initialValue: widget.value?.toString(),
-          hint: Text(widget.config.placeholder),
+          hint: Text(widget.config.placeholder ?? ''),
           decoration: const InputDecoration(),
           validator: _getValidator(),
           items: options.map((option) {

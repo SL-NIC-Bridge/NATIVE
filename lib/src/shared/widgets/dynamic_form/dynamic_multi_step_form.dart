@@ -198,8 +198,8 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
                             height: 4,
                             decoration: BoxDecoration(
                               color: isCompleted || isActive
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.grey.shade300,
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.secondary.withValues(alpha: 0.6),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -208,8 +208,8 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
                             _formConfigEntry.steps[index].title,
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: isCompleted || isActive
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.grey.shade600,
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.secondary.withValues(alpha: 0.6),
                               fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                             ),
                             textAlign: TextAlign.center,

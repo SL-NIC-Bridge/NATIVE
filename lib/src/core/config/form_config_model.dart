@@ -19,9 +19,9 @@ class ValidationRule {
 
   factory ValidationRule.fromJson(Map<String, dynamic> json) {
     return ValidationRule(
-      type: json['type'] as String,
+      type: json['type'] as String? ?? '',
       value: json['value'],
-      message: json['message'] as String,
+      message: json['message'] as String? ?? '',
     );
   }
 
@@ -51,7 +51,7 @@ class FormField {
   }
 
   static String _fieldTypeToJson(FieldType type) => type.name;
-  final String placeholder;
+  final String? placeholder;
   final bool required;
   final Map<String, dynamic> properties;
   final List<ValidationRule> validationRules;
@@ -60,7 +60,7 @@ class FormField {
     required this.fieldId,
     required this.type,
     required this.label,
-    required this.placeholder,
+    this.placeholder,
     required this.required,
     required this.properties,
     required this.validationRules,
@@ -81,7 +81,7 @@ class FormFieldVariation extends FormField {
     required String fieldId,
     required FieldType type,
     required String label,
-    required String placeholder,
+    String? placeholder,
     required bool required,
     required Map<String, dynamic> properties,
     required List<ValidationRule> validationRules,
@@ -90,7 +90,7 @@ class FormFieldVariation extends FormField {
           fieldId: fieldId,
           type: type,
           label: label,
-          placeholder: placeholder,
+          placeholder: placeholder ?? '',
           required: required,
           properties: properties,
           validationRules: validationRules,
@@ -132,9 +132,9 @@ class FormStep {
 
   factory FormStep.fromJson(Map<String, dynamic> json) {
     return FormStep(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
       fields: [],  // We'll resolve fields after the full config is loaded
     );
   }
@@ -177,7 +177,7 @@ class FormConfig {
         final step = stepJson as Map<String, dynamic>;
         final fields = (step['fields'] as List).map((fieldJson) {
           if (fieldJson is Map<String, dynamic> && fieldJson.containsKey('\$ref')) {
-            final ref = fieldJson['\$ref'] as String;
+            final ref = fieldJson['\$ref'] as String? ?? '';
             // Parse the reference path
             final parts = ref.split('/');
             if (parts.length == 3 && parts[0] == '#') {
@@ -196,9 +196,9 @@ class FormConfig {
         }).toList();
 
         return FormStep(
-          id: step['id'] as String,
-          title: step['title'] as String,
-          description: step['description'] as String,
+          id: step['id'] as String? ?? '',
+          title: step['title'] as String? ?? '',
+          description: step['description'] as String? ?? '',
           fields: fields,
         );
       }).toList();
@@ -206,9 +206,9 @@ class FormConfig {
       return MapEntry(
         key,
         FormConfigEntry(
-          id: configJson['id'] as String,
-          title: configJson['title'] as String,
-          description: configJson['description'] as String,
+          id: configJson['id'] as String? ?? '',
+          title: configJson['title'] as String? ?? '',
+          description: configJson['description'] as String? ?? '',
           steps: steps,
         ),
       );
