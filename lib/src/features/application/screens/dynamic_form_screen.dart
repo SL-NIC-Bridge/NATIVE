@@ -5,9 +5,11 @@ import 'package:sl_nic_bridge/src/core/config/form_config_provider.dart';
 import 'package:sl_nic_bridge/src/core/constants/app_routes.dart';
 import '../../../shared/widgets/dynamic_form/dynamic_multi_step_form.dart';
 import '../../../core/config/app_config_provider.dart';
+import '../../../shared/widgets/dynamic_form/error_display.dart';
 import '../../../shared/utils/form_utils.dart';
 import '../repositories/application_repository.dart';
 import '../providers/application_provider.dart';
+
 
 class DynamicFormScreen extends ConsumerWidget {
   final String formType;
@@ -24,81 +26,13 @@ class DynamicFormScreen extends ConsumerWidget {
     return appConfigAsync.when(
       data: (appConfig) {
         final formConfig = appConfig;
-            
-        if (formConfig.formTypes.isEmpty) {
 
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Form Not Found'),
-            ),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Form configuration not found',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'The requested form type is not available.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.pop(),
-                    child: const Text('Go Back'),
-                  ),
-                ],
-              ),
-            ),
-          );
+        if (formConfig.formTypes.isEmpty) {
+          return _buildFormNotFound(context, 'Form configuration not found');
         }
         
-        // Check if the form type exists in the configuration
         if (!formConfig.formConfigs.containsKey(formType)) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Invalid Form Type'),
-            ),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Invalid form type: $formType',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'The requested form type does not exist.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.pop(),
-                    child: const Text('Go Back'),
-                  ),
-                ],
-              ),
-            ),
-          );
+          return _buildFormNotFound(context, 'Invalid form type: $formType\nThe requested form type does not exist.');
         }
 
         return DynamicMultiStepForm(
@@ -118,38 +52,7 @@ class DynamicFormScreen extends ConsumerWidget {
         ),
       ),
       error: (error, stackTrace) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Error'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Failed to load form configuration',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Please try again later.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(appConfigProvider),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
+        body: ErrorDisplay(message: 'Failed to load form configuration: $error', onRetry: () => ref.invalidate(appConfigProvider)),
       ),
     );
   }
@@ -248,5 +151,33 @@ class DynamicFormScreen extends ConsumerWidget {
       default:
         throw Exception('Unknown form type: $formType');
     }
+  }
+
+  Widget _buildFormNotFound(BuildContext context, String message) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Form Not Found'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(onPressed: () => context.pop(), child: const Text('Go Back')),
+          ],
+        ),
+      ),
+    );
   }
 }
