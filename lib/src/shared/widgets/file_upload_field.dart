@@ -102,8 +102,9 @@ class _FileUploadFieldState extends State<FileUploadField> {
         final ImagePicker picker = ImagePicker();
         final XFile? image = await picker.pickImage(
           source: ImageSource.gallery,
-          maxWidth: widget.properties['maxWidth'] as double?,
-          maxHeight: widget.properties['maxHeight'] as double?,
+          // FIX: Safely convert numbers (int or double) from config to double.
+          maxWidth: (widget.properties['maxWidth'] as num?)?.toDouble(),
+          maxHeight: (widget.properties['maxHeight'] as num?)?.toDouble(),
         );
 
         if (image != null) {
