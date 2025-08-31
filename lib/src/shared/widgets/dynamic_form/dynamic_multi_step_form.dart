@@ -10,6 +10,7 @@ class DynamicMultiStepForm extends StatefulWidget {
   final config.FormConfig formConfig;
   final String formType;
   final Map<String, dynamic>? initialData;
+  final Map<String, dynamic>? ocrData; // New: OCR extracted data
   final Function(Map<String, dynamic> formData) onSubmit;
   final VoidCallback? onCancel;
 
@@ -19,6 +20,7 @@ class DynamicMultiStepForm extends StatefulWidget {
     required this.formConfig,
     required this.formType,
     this.initialData,
+    this.ocrData, // New parameter
     required this.onSubmit,
     this.onCancel,
 
@@ -40,7 +42,20 @@ class _DynamicMultiStepFormState extends State<DynamicMultiStepForm> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    _formData = Map<String, dynamic>.from(widget.initialData ?? {});
+    
+    // Initialize form data, merging initialData and ocrData
+    _formData = <String, dynamic>{};
+    
+    // First apply initial data if available
+    if (widget.initialData != null) {
+      _formData.addAll(widget.initialData!);
+    }
+    
+    // Then apply OCR data (this will override initial data for matching fields)
+    if (widget.ocrData != null) {
+      _formData.addAll(widget.ocrData!);
+    }
+    
     _formConfigEntry = widget.formConfig.formConfigs[widget.formType]!;
   }
 

@@ -23,6 +23,10 @@ class DynamicFormScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appConfigAsync = ref.watch(formConfigProvider);
     
+    // Get OCR data from route extra if available
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+    final ocrData = extra?['ocrData'] as Map<String, dynamic>?;
+    
     return appConfigAsync.when(
       data: (appConfig) {
         final formConfig = appConfig;
@@ -30,7 +34,7 @@ class DynamicFormScreen extends ConsumerWidget {
         if (formConfig.formTypes.isEmpty) {
           return _buildFormNotFound(context, 'Form configuration not found');
         }
-        
+
         if (!formConfig.formConfigs.containsKey(formType)) {
           return _buildFormNotFound(context, 'Invalid form type: $formType\nThe requested form type does not exist.');
         }
@@ -38,6 +42,7 @@ class DynamicFormScreen extends ConsumerWidget {
         return DynamicMultiStepForm(
           formConfig: formConfig,
           formType: formType,
+          ocrData: ocrData, // Pass OCR data to the form
           onSubmit: (formData) async {
             await _handleFormSubmission(context, ref, formData, formType);
           },

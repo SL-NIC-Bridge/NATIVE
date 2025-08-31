@@ -46,6 +46,10 @@ dependencies:
   json_serializable: ^6.10.0
   build_runner: ^2.7.0
   file_picker: ^10.3.2
+  
+  # OCR functionality
+  google_mlkit_text_recognition: ^0.13.0
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

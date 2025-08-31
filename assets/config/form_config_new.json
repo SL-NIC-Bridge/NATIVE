@@ -344,7 +344,7 @@
         "new_nic": {
             "id": "new-nic-form",
             "title": "New NIC Application",
-            "description": "Apply for your first National Identity Card",
+            "description": "Apply for your first National Identity Card. We've pre-filled some fields using document scanning - please review and update as needed.",
             "steps": [
                 {
                     "id": "personal-info",
@@ -633,7 +633,7 @@
         "replace_nic": {
             "id": "replace-nic-form",
             "title": "NIC Replacement Application",
-            "description": "Replace your lost, damaged, or expired National Identity Card",
+            "description": "Replace your lost, damaged, or expired National Identity Card. We've pre-filled some fields using document scanning - please review and update as needed.",
             "steps": [
                 {
                     "id": "personal-info",
@@ -828,7 +828,7 @@
         "correct_nic": {
             "id": "correct-nic-form",
             "title": "NIC Information Correction",
-            "description": "Request correction of information on your existing NIC",
+            "description": "Request correction of information on your existing NIC. We've pre-filled some fields using document scanning - please review and update as needed.",
             "steps": [
                 {
                     "id": "personal-info",

@@ -203,7 +203,7 @@ class FormTypeSelectionScreen extends ConsumerWidget {
   }
 
   void _navigateToForm(BuildContext context, String formTypeId) {
-    // Navigate to dynamic form with form type parameter
-    context.go(AppRoutes.dynamicFormWithType(formTypeId));
+    // Navigate to OCR pre-form screen first, which will then navigate to the actual form
+    context.go(AppRoutes.ocrPreFormWithType(formTypeId));
   }
 }

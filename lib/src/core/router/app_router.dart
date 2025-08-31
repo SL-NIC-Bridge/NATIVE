@@ -7,6 +7,7 @@ import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/application/screens/dashboard_screen.dart';
 import '../../features/application/screens/dynamic_form_screen.dart';
+import '../../features/application/screens/ocr_pre_form_screen.dart';
 import '../../features/application/screens/application_status_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/settings/screens/edit_profile_screen.dart';
@@ -47,6 +48,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '${AppRoutes.dynamicForm}/:formType',
         builder: (context, state) => DynamicFormScreen(
+          formType: state.pathParameters['formType']!,
+        ),
+      ),
+      GoRoute(
+        path: '/ocr-pre-form/:formType',
+        builder: (context, state) => OCRPreFormScreen(
           formType: state.pathParameters['formType']!,
         ),
       ),
