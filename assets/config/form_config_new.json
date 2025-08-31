@@ -305,6 +305,267 @@
             "validationRules": []
         }
     },
+    "ocrConfigurations": {
+        "new_nic": {
+            "enabled": true,
+            "title": "Scan Birth Certificate",
+            "description": "Take a photo of your birth certificate or identity document to automatically extract and fill basic information like your name, date of birth, and place of birth.",
+            "documentTypes": ["birth_certificate", "identity_document"],
+            "extractionRules": {
+                "familyName": {
+                    "patterns": ["\\b[A-Z]{2,}(?:\\s+[A-Z]{2,})*\\b"],
+                    "priority": 1,
+                    "fieldMapping": "familyName",
+                    "validation": "required|min:2|alpha_spaces",
+                    "processingHints": ["first_uppercase_sequence", "longest_name_part"]
+                },
+                "name": {
+                    "patterns": ["\\b[A-Z]{2,}(?:\\s+[A-Z]{2,})*\\b"],
+                    "priority": 2,
+                    "fieldMapping": "name",
+                    "validation": "required|min:2|alpha_spaces",
+                    "processingHints": ["middle_name_parts"]
+                },
+                "surname": {
+                    "patterns": ["\\b[A-Z]{2,}(?:\\s+[A-Z]{2,})*\\b"],
+                    "priority": 3,
+                    "fieldMapping": "surname",
+                    "validation": "required|min:2|alpha_spaces",
+                    "processingHints": ["last_uppercase_sequence"]
+                },
+                "dateOfBirth": {
+                    "patterns": [
+                        "\\b\\d{1,2}[/-]\\d{1,2}[/-]\\d{4}\\b",
+                        "\\b\\d{4}[/-]\\d{1,2}[/-]\\d{1,2}\\b",
+                        "(?:born|birth|dob)[:\\s]*([0-9/-]+)",
+                        "(?:date.*?birth)[:\\s]*([0-9/-]+)"
+                    ],
+                    "priority": 4,
+                    "fieldMapping": "dateOfBirth",
+                    "validation": "required|date|before:today-16y",
+                    "processingHints": ["convert_to_iso_format", "validate_age_minimum"]
+                },
+                "birthCertificateNo": {
+                    "patterns": [
+                        "(?:birth.*?certificate.*?no|bc.*?no|cert.*?no)[:\\s]*([A-Z0-9]+)",
+                        "(?:registration.*?no)[:\\s]*([A-Z0-9]+)",
+                        "\\b[A-Z]{1,3}[0-9]{4,8}\\b"
+                    ],
+                    "priority": 5,
+                    "fieldMapping": "birthCertificateNo",
+                    "validation": "required|alphanumeric",
+                    "processingHints": ["uppercase_transformation", "remove_spaces"]
+                },
+                "birthPlace": {
+                    "patterns": [
+                        "(?:place.*?birth|born.*?at|birth.*?place)[:\\s]*([A-Za-z\\s]+)",
+                        "(?:hospital|clinic|maternity)[:\\s]*([A-Za-z\\s]+)"
+                    ],
+                    "priority": 6,
+                    "fieldMapping": "birthPlace",
+                    "validation": "required|alpha_spaces",
+                    "processingHints": ["title_case_transformation"]
+                },
+                "birthDivision": {
+                    "patterns": [
+                        "(?:division|div)[:\\s]*([A-Za-z\\s]+)",
+                        "(?:grama.*?niladhari|gn)[:\\s]*([A-Za-z\\s]+)"
+                    ],
+                    "priority": 7,
+                    "fieldMapping": "birthDivision",
+                    "validation": "required|alpha_spaces",
+                    "processingHints": ["title_case_transformation"]
+                },
+                "birthDistrict": {
+                    "patterns": [
+                        "(?:district|dist)[:\\s]*([A-Za-z\\s]+)",
+                        "\\b(Colombo|Kandy|Galle|Matara|Hambantota|Jaffna|Kilinochchi|Mannar|Vavuniya|Mullaitivu|Batticaloa|Ampara|Trincomalee|Kurunegala|Puttalam|Anuradhapura|Polonnaruwa|Badulla|Moneragala|Ratnapura|Kegalle|Kalutara|Gampaha|Nuwara Eliya)\\b"
+                    ],
+                    "priority": 8,
+                    "fieldMapping": "birthDistrict",
+                    "validation": "required|alpha_spaces",
+                    "processingHints": ["title_case_transformation", "district_validation"]
+                },
+                "sex": {
+                    "patterns": [
+                        "\\b(male|female|m|f)\\b",
+                        "(?:gender|sex)[:\\s]*(male|female|m|f)"
+                    ],
+                    "priority": 9,
+                    "fieldMapping": "sex",
+                    "validation": "required|in:male,female",
+                    "processingHints": ["normalize_gender"]
+                }
+            },
+            "imageProcessing": {
+                "maxSize": 5242880,
+                "quality": 80,
+                "allowedFormats": ["jpg", "jpeg", "png"],
+                "preprocessingSteps": ["auto_rotate", "enhance_contrast", "noise_reduction"]
+            },
+            "userGuidance": {
+                "captureInstructions": [
+                    "Place the document on a flat surface",
+                    "Ensure good lighting",
+                    "Keep the camera steady",
+                    "Make sure all text is visible and clear"
+                ],
+                "troubleshooting": {
+                    "poorQuality": "Try better lighting and hold the camera steady",
+                    "noTextFound": "Ensure the document is clearly visible and try again",
+                    "wrongDocument": "Please scan a birth certificate or valid identity document"
+                }
+            }
+        },
+        "replace_nic": {
+            "enabled": true,
+            "title": "Scan Identity Document",
+            "description": "Take a photo of your existing NIC (if available) or birth certificate to automatically extract your personal information.",
+            "documentTypes": ["nic", "birth_certificate", "identity_document"],
+            "extractionRules": {
+                "existingNicNumber": {
+                    "patterns": [
+                        "\\b\\d{9}[vVxX]\\b",
+                        "\\b\\d{12}\\b",
+                        "(?:nic|id)[:\\s]*([0-9vVxX]+)"
+                    ],
+                    "priority": 1,
+                    "fieldMapping": "existingNicNumber",
+                    "validation": "required|nic_format",
+                    "processingHints": ["uppercase_transformation", "validate_nic_checksum"]
+                },
+                "familyName": {
+                    "patterns": ["\\b[A-Z]{2,}(?:\\s+[A-Z]{2,})*\\b"],
+                    "priority": 2,
+                    "fieldMapping": "familyName",
+                    "validation": "required|min:2|alpha_spaces",
+                    "processingHints": ["first_uppercase_sequence"]
+                },
+                "name": {
+                    "patterns": ["\\b[A-Z]{2,}(?:\\s+[A-Z]{2,})*\\b"],
+                    "priority": 3,
+                    "fieldMapping": "name",
+                    "validation": "required|min:2|alpha_spaces",
+                    "processingHints": ["middle_name_parts"]
+                },
+                "surname": {
+                    "patterns": ["\\b[A-Z]{2,}(?:\\s+[A-Z]{2,})*\\b"],
+                    "priority": 4,
+                    "fieldMapping": "surname",
+                    "validation": "required|min:2|alpha_spaces",
+                    "processingHints": ["last_uppercase_sequence"]
+                },
+                "sex": {
+                    "patterns": [
+                        "\\b(male|female|m|f)\\b",
+                        "(?:gender|sex)[:\\s]*(male|female|m|f)"
+                    ],
+                    "priority": 5,
+                    "fieldMapping": "sex",
+                    "validation": "required|in:male,female",
+                    "processingHints": ["normalize_gender"]
+                },
+                "previousCardIssueDate": {
+                    "patterns": [
+                        "(?:issued|issue.*?date)[:\\s]*([0-9/-]+)",
+                        "\\b\\d{1,2}[/-]\\d{1,2}[/-]\\d{4}\\b"
+                    ],
+                    "priority": 6,
+                    "fieldMapping": "previousCardIssueDate",
+                    "validation": "date|before:today",
+                    "processingHints": ["convert_to_iso_format"]
+                }
+            },
+            "imageProcessing": {
+                "maxSize": 5242880,
+                "quality": 85,
+                "allowedFormats": ["jpg", "jpeg", "png"],
+                "preprocessingSteps": ["auto_rotate", "enhance_contrast", "edge_detection"]
+            },
+            "userGuidance": {
+                "captureInstructions": [
+                    "Scan your existing NIC or birth certificate",
+                    "Ensure the card/document is not damaged or faded",
+                    "Place on a contrasting background",
+                    "Keep all edges visible in the frame"
+                ],
+                "troubleshooting": {
+                    "damagedCard": "Try scanning a clearer section or use birth certificate instead",
+                    "reflection": "Avoid direct light that causes reflections on the card",
+                    "blurry": "Hold the camera steady and tap to focus"
+                }
+            }
+        },
+        "correct_nic": {
+            "enabled": true,
+            "title": "Scan Current NIC",
+            "description": "Take a photo of your current NIC and any supporting documents to extract the information that needs to be corrected.",
+            "documentTypes": ["nic", "supporting_documents"],
+            "extractionRules": {
+                "existingNicNumber": {
+                    "patterns": [
+                        "\\b\\d{9}[vVxX]\\b",
+                        "\\b\\d{12}\\b",
+                        "(?:nic|id)[:\\s]*([0-9vVxX]+)"
+                    ],
+                    "priority": 1,
+                    "fieldMapping": "existingNicNumber",
+                    "validation": "required|nic_format",
+                    "processingHints": ["uppercase_transformation", "validate_nic_checksum"]
+                },
+                "familyName": {
+                    "patterns": ["\\b[A-Z]{2,}(?:\\s+[A-Z]{2,})*\\b"],
+                    "priority": 2,
+                    "fieldMapping": "familyName",
+                    "validation": "required|min:2|alpha_spaces",
+                    "processingHints": ["first_uppercase_sequence", "detect_corrections_needed"]
+                },
+                "name": {
+                    "patterns": ["\\b[A-Z]{2,}(?:\\s+[A-Z]{2,})*\\b"],
+                    "priority": 3,
+                    "fieldMapping": "name",
+                    "validation": "required|min:2|alpha_spaces",
+                    "processingHints": ["middle_name_parts", "detect_corrections_needed"]
+                },
+                "surname": {
+                    "patterns": ["\\b[A-Z]{2,}(?:\\s+[A-Z]{2,})*\\b"],
+                    "priority": 4,
+                    "fieldMapping": "surname",
+                    "validation": "required|min:2|alpha_spaces",
+                    "processingHints": ["last_uppercase_sequence", "detect_corrections_needed"]
+                },
+                "occupation": {
+                    "patterns": [
+                        "(?:occupation|profession|job)[:\\s]*([A-Za-z\\s]+)",
+                        "(?:work|employed)[:\\s]*([A-Za-z\\s]+)"
+                    ],
+                    "priority": 5,
+                    "fieldMapping": "occupation",
+                    "validation": "alpha_spaces",
+                    "processingHints": ["title_case_transformation"]
+                }
+            },
+            "imageProcessing": {
+                "maxSize": 5242880,
+                "quality": 90,
+                "allowedFormats": ["jpg", "jpeg", "png"],
+                "preprocessingSteps": ["auto_rotate", "enhance_contrast", "text_enhancement"]
+            },
+            "userGuidance": {
+                "captureInstructions": [
+                    "Scan your current NIC clearly",
+                    "If correcting names, also scan supporting documents",
+                    "Ensure all text is readable",
+                    "Use good lighting to avoid shadows"
+                ],
+                "troubleshooting": {
+                    "multipleDocuments": "Scan each document separately for best results",
+                    "corrections": "The system will help identify what needs to be corrected",
+                    "supporting": "Supporting documents help verify correct information"
+                }
+            }
+        }
+    },
     "fieldVariations": {
         "correctFirstName": {
             "fieldId": "correctFirstName",
