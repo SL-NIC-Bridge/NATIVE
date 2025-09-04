@@ -290,7 +290,7 @@ class _OCRDocumentCaptureState extends State<OCRDocumentCapture> {
         
         Row(
           children: [
-            Expanded(
+            Flexible(
               child: CustomButton(
                 onPressed: _retryCapture,
                 text: 'Retry',
@@ -299,7 +299,7 @@ class _OCRDocumentCaptureState extends State<OCRDocumentCapture> {
               ),
             ),
             const SizedBox(width: 16),
-            Expanded(
+            Flexible(
               child: CustomButton(
                 onPressed: _confirmExtractedData,
                 text: 'Use This Data',

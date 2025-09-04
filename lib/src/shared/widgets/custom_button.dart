@@ -33,16 +33,21 @@ class CustomButton extends StatelessWidget {
           )
         : Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon),
-                const SizedBox(width: 8),
+                Icon(icon, size: 18),
+                const SizedBox(width: 6),
               ],
-              Text(
-                text,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+              Flexible(
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ],
@@ -50,24 +55,30 @@ class CustomButton extends StatelessWidget {
 
     switch (type) {
       case ButtonType.primary:
-        return ElevatedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.primary,
-            foregroundColor: foregroundColor ?? Theme.of(context).colorScheme.onPrimary,
+        return SizedBox(
+          height: 48,
+          child: ElevatedButton(
+            onPressed: isLoading ? null : onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.primary,
+              foregroundColor: foregroundColor ?? Theme.of(context).colorScheme.onPrimary,
+            ),
+            child: child,
           ),
-          child: child,
         );
       case ButtonType.secondary:
-        return OutlinedButton(
-          onPressed: isLoading ? null : onPressed,
-          style: backgroundColor != null || foregroundColor != null
-              ? OutlinedButton.styleFrom(
-                  backgroundColor: backgroundColor,
-                  foregroundColor: foregroundColor,
-                )
-              : null,
-          child: child,
+        return SizedBox(
+          height: 48,
+          child: OutlinedButton(
+            onPressed: isLoading ? null : onPressed,
+            style: backgroundColor != null || foregroundColor != null
+                ? OutlinedButton.styleFrom(
+                    backgroundColor: backgroundColor,
+                    foregroundColor: foregroundColor,
+                  )
+                : null,
+            child: child,
+          ),
         );
       case ButtonType.text:
         return TextButton(
