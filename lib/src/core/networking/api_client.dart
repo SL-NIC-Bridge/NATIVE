@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sl_nic_bridge/src/core/config/app_config.dart';
 import '../config/app_config_provider.dart';
 import '../constants/app_keys.dart';
 
@@ -10,6 +9,8 @@ import '../constants/app_keys.dart';
 final apiClientProvider = FutureProvider<Dio>((ref) async {
   // Wait for config to load completely
   final config = await ref.watch(appConfigProvider.future);
+  
+  print('API Client Config - Base URL: ${config.apiBaseUrl}');
   
   final dio = Dio(BaseOptions(
     baseUrl: config.apiBaseUrl,
@@ -139,40 +140,4 @@ class AuthInterceptor extends Interceptor {
     }
     handler.next(response);
   }
-}
-
-// Alternative simpler approach if you prefer the original structure
-final apiClientProviderSimple = Provider<AsyncValue<Dio>>((ref) {
-  final config = ref.watch(appConfigProvider);
-  
-  return config.when(
-    data: (config) => AsyncValue.data(_createDio(config, ref)),
-    loading: () => const AsyncValue.loading(),
-    error: (error, stack) => AsyncValue.error(error, stack),
-  );
-});
-
-Dio _createDio(AppConfig config, Ref ref) {
-  final dio = Dio(BaseOptions(
-    baseUrl: config.apiBaseUrl,
-    connectTimeout: const Duration(seconds: 30),
-    receiveTimeout: const Duration(seconds: 30),
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  ));
-
-  dio.interceptors.add(AuthInterceptor(ref));
-  
-  if (kDebugMode) {
-    dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      requestHeader: true,
-      responseHeader: false,
-    ));
-  }
-
-  return dio;
 }

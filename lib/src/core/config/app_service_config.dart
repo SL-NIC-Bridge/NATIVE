@@ -10,5 +10,5 @@ class AppConfig {
 
 final appConfigProvider = Provider<AppConfig>((ref) {
   // Change this to false to use real API services
-  return const AppConfig(useMockServices: true);
+  return const AppConfig(useMockServices: false);
 });
