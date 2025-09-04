@@ -7,7 +7,6 @@ import 'package:sl_nic_bridge/src/features/application/models/application_model.
 import '../providers/application_provider.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/errors/app_error.dart';
-import '../../../core/services/service_status.dart';
 import '../../../shared/widgets/custom_button.dart';
 
 class ApplicationStatusScreen extends ConsumerWidget {
@@ -111,45 +110,6 @@ class ApplicationStatusScreen extends ConsumerWidget {
           child: CircularProgressIndicator(),
         ),
         error: (error, stack) {
-          // Check service status
-          final serviceStatus = ref.read(serviceStatusProvider);
-          if (!serviceStatus.isConnected) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.cloud_off,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Service Unavailable',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    serviceStatus.message,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  CustomButton(
-                    onPressed: () => ref.invalidate(applicationStatusProvider),
-                    text: 'Try Again',
-                    type: ButtonType.secondary,
-                  ),
-                ],
-              ),
-            );
-          }
-
           // Handle specific errors
           final appError = AppError.handle(error, stack);
           IconData errorIcon;
