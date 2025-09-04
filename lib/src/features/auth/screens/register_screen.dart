@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
+import '../providers/grama_division_provider.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_keys.dart';
-import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../../shared/widgets/custom_dropdown_field.dart';
+import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/loading_overlay.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -17,60 +19,83 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>(debugLabel: AppKeys.registerForm);
-  final _fullNameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _gramaDivisionController = TextEditingController();
+  String? _selectedGramaDivisionId;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
   @override
   void dispose() {
-    _fullNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _gramaDivisionController.dispose();
     super.dispose();
   }
 
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    await ref.read(authStateProvider.notifier).register(
-      fullName: _fullNameController.text.trim(),
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-      gramaNiladariDivisionNo: _gramaDivisionController.text.trim(),
-    );
+    if (_selectedGramaDivisionId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select your Grama Niladari Division.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
 
-    final authState = ref.read(authStateProvider).value;
-    if (mounted) {
-      if (authState?.isAuthenticated == true) {
-        context.go(AppRoutes.dashboard);
-      } else if (authState?.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authState!.error!),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+    await ref.read(authStateProvider.notifier).register(
+          firstName: _firstNameController.text.trim(),
+          lastName: _lastNameController.text.trim(),
+          phone: _phoneController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          divisionId: _selectedGramaDivisionId!,
         );
-        ref.read(authStateProvider.notifier).clearError();
-      }
+
+    final authState = ref.read(authStateProvider);
+    if (mounted) {
+      authState.when(
+        data: (state) {
+          if (state.isAuthenticated) {
+            context.go(AppRoutes.dashboard);
+          }
+        },
+        error: (error, stack) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error.toString()),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        },
+        loading: () {
+          // Do nothing while loading
+        },
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
+    final gramaDivisionsAsync = ref.watch(gramaDivisionProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Account'),
       ),
       body: LoadingOverlay(
-        isLoading: authState.value?.isLoading ?? false,
+        isLoading: authState.isLoading,
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -81,16 +106,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Text(
                   'Join SL-NIC-Bridge',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Create your account to get started',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
@@ -99,15 +124,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   child: Column(
                     children: [
                       CustomTextField(
-                        controller: _fullNameController,
-                        label: 'Full Name',
+                        controller: _firstNameController,
+                        label: 'First Name',
                         prefixIcon: Icons.person_outline,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your full name';
+                            return 'Please enter your first name';
                           }
-                          if (value.length < 3) {
-                            return 'Full name must be at least 3 characters';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        controller: _lastNameController,
+                        label: 'Last Name',
+                        prefixIcon: Icons.person_outline,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your last name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        controller: _phoneController,
+                        label: 'Phone Number',
+                        keyboardType: TextInputType.phone,
+                        prefixIcon: Icons.phone_outlined,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your phone number';
+                          }
+                          if (!RegExp(r'^0[0-9]{9}$').hasMatch(value)) {
+                            return 'Please enter a valid 10-digit phone number';
                           }
                           return null;
                         },
@@ -129,15 +179,49 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      CustomTextField(
-                        controller: _gramaDivisionController,
-                        label: 'Grama Niladari Division No.',
-                        prefixIcon: Icons.location_on_outlined,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your Grama Niladari Division No.';
-                          }
-                          return null;
+                      gramaDivisionsAsync.when(
+                        data: (gramaDivisions) {
+                          return CustomDropdownField<String>(
+                            label: 'Grama Niladari Division',
+                            value: _selectedGramaDivisionId,
+                            hintText: 'Select Grama Niladari Division',
+                            prefixIcon: Icons.location_on_outlined,
+                            items: gramaDivisions.map((division) {
+                              return DropdownMenuItem<String>(
+                                value: division.id,
+                                child: Text('${division.code} - ${division.name}'),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _selectedGramaDivisionId = newValue;
+                              });
+                            },
+                            validator: (value) {
+                              if (value == null) {
+                                return 'Please select your Grama Niladari Division';
+                              }
+                              return null;
+                            },
+                          );
+                        },
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (err, stack) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to load Grama Divisions: $err'),
+                                backgroundColor: Theme.of(context).colorScheme.error,
+                              ),
+                            );
+                          });
+                          return CustomDropdownField<String>(
+                            label: 'Grama Niladari Division',
+                            hintText: 'Could not load divisions',
+                            items: const [],
+                            enabled: false,
+                            prefixIcon: Icons.location_on_outlined,
+                          );
                         },
                       ),
                       const SizedBox(height: 16),

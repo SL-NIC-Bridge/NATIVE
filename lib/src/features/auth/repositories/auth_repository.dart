@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/networking/api_client.dart';
 import '../../../core/networking/base_response.dart';
+import '../../../core/constants/api_endpoints.dart';
 import '../models/user_model.dart';
 
 // FIXED: Use FutureProvider to properly handle async API client
@@ -22,13 +23,15 @@ final authRepositoryProviderSync = Provider<AsyncValue<AuthRepository>>((ref) {
 
 class AuthResponse {
   final String token;
+  final String refreshToken;
   final User user;
 
-  AuthResponse({required this.token, required this.user});
+  AuthResponse({required this.token, required this.refreshToken, required this.user});
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
-      token: json['token'] as String,
+      token: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
       user: User.fromJson(json['user'] as Map<String, dynamic>),
     );
   }
@@ -41,50 +44,45 @@ class AuthRepository {
 
   Future<AuthResponse> login(String email, String password) async {
     try {
-      final response = await _dio.post('/auth/login', data: {
+      final response = await _dio.post(ApiEndpoints.login, data: {
         'email': email,
         'password': password,
       });
 
-      final baseResponse = BaseResponse<Map<String, dynamic>>.fromJson(
-        response.data,
-        (json) => json as Map<String, dynamic>,
-      );
-
-      if (baseResponse.success && baseResponse.data != null) {
-        return AuthResponse.fromJson(baseResponse.data!);
+      // Handle direct response structure from your API
+      if (response.data['success'] == true && response.data['data'] != null) {
+        return AuthResponse.fromJson(response.data['data']);
       } else {
-        throw Exception(baseResponse.message);
+        throw Exception(response.data['message'] ?? 'Login failed');
       }
-    } on DioException {
-      // throw _handleError(e);
-      return AuthResponse(token: 'dfvdfvd', user: User(id: 'sds3sdc3s', fullName: 'sdcsdsds  sds', email: 'sfd@dh.sd', gramaNiladariDivisionNo: '236', createdAt: DateTime(2000), updatedAt: DateTime(2000)));
+    } on DioException catch (e) {
+      throw _handleError(e);
     }
   }
 
   Future<AuthResponse> register({
-    required String fullName,
+    required String firstName,
+    required String lastName,
+    required String phone,
     required String email,
     required String password,
-    required String gramaNiladariDivisionNo,
+    required String divisionId,
   }) async {
     try {
-      final response = await _dio.post('/auth/register', data: {
-        'fullName': fullName,
+      final response = await _dio.post(ApiEndpoints.register, data: {
+        'firstName': firstName,
+        'lastName': lastName,
+        'phone': phone,
         'email': email,
         'password': password,
-        'gramaNiladariDivisionNo': gramaNiladariDivisionNo,
+        'divisionId': divisionId,
       });
 
-      final baseResponse = BaseResponse<Map<String, dynamic>>.fromJson(
-        response.data,
-        (json) => json as Map<String, dynamic>,
-      );
-
-      if (baseResponse.success && baseResponse.data != null) {
-        return AuthResponse.fromJson(baseResponse.data!);
+      // Handle direct response structure from your API
+      if (response.data['success'] == true && response.data['data'] != null) {
+        return AuthResponse.fromJson(response.data['data']);
       } else {
-        throw Exception(baseResponse.message);
+        throw Exception(response.data['message'] ?? 'Registration failed');
       }
     } on DioException catch (e) {
       throw _handleError(e);
@@ -93,7 +91,7 @@ class AuthRepository {
 
   Future<User> getCurrentUser() async {
     try {
-      final response = await _dio.get('/auth/profile');
+      final response = await _dio.get(ApiEndpoints.profile);
 
       final baseResponse = BaseResponse<Map<String, dynamic>>.fromJson(
         response.data,
@@ -114,6 +112,11 @@ class AuthRepository {
     if (e.response != null) {
       final data = e.response!.data;
       if (data is Map<String, dynamic>) {
+        // Handle your backend's error format: {"success": false, "error": {"message": "...", "code": "..."}}
+        if (data.containsKey('error') && data['error'] is Map<String, dynamic>) {
+          return data['error']['message'] ?? 'An error occurred';
+        }
+        // Fallback to standard message field
         return data['message'] ?? 'An error occurred';
       }
     }

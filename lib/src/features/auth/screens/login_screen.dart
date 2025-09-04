@@ -7,6 +7,7 @@ import '../../../core/constants/app_keys.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/loading_overlay.dart';
+import 'package:sl_nic_bridge/src/features/auth/models/auth_state.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -20,6 +21,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -29,36 +31,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    setState(() {
+      _errorMessage = null;
+    });
 
     await ref.read(authStateProvider.notifier).login(
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
-
-    final authState = ref.read(authStateProvider).value;
-    if (mounted) {
-      if (authState?.isAuthenticated == true) {
-        context.go(AppRoutes.dashboard);
-      } else if (authState?.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authState!.error!),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+          _emailController.text.trim(),
+          _passwordController.text,
         );
-        ref.read(authStateProvider.notifier).clearError();
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<AuthState>>(
+      authStateProvider,
+      (_, state) {
+        state.when(
+          data: (authState) {
+            if (authState.isAuthenticated) {
+              context.go(AppRoutes.dashboard);
+            }
+          },
+          error: (error, __) {
+            setState(() {
+              _errorMessage = error.toString();
+            });
+          },
+          loading: () {
+            setState(() {
+              _errorMessage = null;
+            });
+          },
+        );
+      },
+    );
+
     final authState = ref.watch(authStateProvider);
 
     return Scaffold(
       body: LoadingOverlay(
-        isLoading: authState.value?.isLoading ?? false,
+        isLoading: authState.isLoading,
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -129,6 +144,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         },
                       ),
                       const SizedBox(height: 24),
+                      if (_errorMessage != null) ...[
+                        Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       CustomButton(
                         key: const Key(AppKeys.loginButton),
                         onPressed: _handleLogin,

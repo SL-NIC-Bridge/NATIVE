@@ -33,8 +33,19 @@ class SplashScreen extends ConsumerWidget {
           
           Future.microtask(() {
             if (context.mounted) {
-              final isAuthenticated = authState.value?.isAuthenticated ?? false;
-              context.go(isAuthenticated ? AppRoutes.dashboard : AppRoutes.login);
+              authState.when(
+                data: (state) {
+                  final isAuthenticated = state.isAuthenticated;
+                  context.go(isAuthenticated ? AppRoutes.dashboard : AppRoutes.login);
+                },
+                loading: () {
+                  // Stay on splash while loading
+                },
+                error: (error, stack) {
+                  // Go to login on auth error
+                  context.go(AppRoutes.login);
+                },
+              );
             }
           });
 
