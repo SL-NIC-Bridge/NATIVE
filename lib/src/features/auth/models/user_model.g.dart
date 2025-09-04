@@ -8,18 +8,26 @@ part of 'user_model.dart';
 
 User _$UserFromJson(Map<String, dynamic> json) => User(
   id: json['id'] as String,
-  fullName: json['fullName'] as String,
+  firstName: json['firstName'] as String,
+  lastName: json['lastName'] as String,
   email: json['email'] as String,
-  gramaNiladariDivisionNo: json['gramaNiladariDivisionNo'] as String,
+  role: json['role'] as String?,
+  phone: json['phone'] as String,
+  currentStatus: json['currentStatus'] as String?,
+  divisionId: json['divisionId'] as String,
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
 );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
   'id': instance.id,
-  'fullName': instance.fullName,
+  'firstName': instance.firstName,
+  'lastName': instance.lastName,
   'email': instance.email,
-  'gramaNiladariDivisionNo': instance.gramaNiladariDivisionNo,
+  'role': ?instance.role,
+  'phone': instance.phone,
+  'currentStatus': ?instance.currentStatus,
+  'divisionId': instance.divisionId,
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
 };

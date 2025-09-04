@@ -5,20 +5,30 @@ part 'user_model.g.dart';
 @JsonSerializable()
 class User {
   final String id;
-  final String fullName;
+  final String firstName;
+  final String lastName;
   final String email;
-  final String gramaNiladariDivisionNo;
+  final String? role;
+  final String phone;
+  final String? currentStatus;
+  final String divisionId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   const User({
     required this.id,
-    required this.fullName,
+    required this.firstName,
+    required this.lastName,
     required this.email,
-    required this.gramaNiladariDivisionNo,
+    this.role,
+    required this.phone,
+    this.currentStatus,
+    required this.divisionId,
     required this.createdAt,
     required this.updatedAt,
   });
+
+  String get fullName => '$firstName $lastName';
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
@@ -26,17 +36,25 @@ class User {
 
   User copyWith({
     String? id,
-    String? fullName,
+    String? firstName,
+    String? lastName,
     String? email,
-    String? gramaNiladariDivisionNo,
+    String? role,
+    String? phone,
+    String? currentStatus,
+    String? divisionId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return User(
       id: id ?? this.id,
-      fullName: fullName ?? this.fullName,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       email: email ?? this.email,
-      gramaNiladariDivisionNo: gramaNiladariDivisionNo ?? this.gramaNiladariDivisionNo,
+      role: role ?? this.role,
+      phone: phone ?? this.phone,
+      currentStatus: currentStatus ?? this.currentStatus,
+      divisionId: divisionId ?? this.divisionId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
