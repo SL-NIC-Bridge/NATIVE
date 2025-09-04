@@ -1,9 +1,9 @@
 {
-  "apiBaseUrl": "https://api.slnicbridge.com/v1",
+  "apiBaseUrl": "http://192.168.8.139:3000/api/v1",
   "jwtStorageKey": "sl_nic_bridge_auth_token",
   "theme": {
-    "seedColorLight": "#FFA500",
-    "seedColorDark": "#FF8C00"
+    "seedColorLight": "#16b88f",
+    "seedColorDark": "#17d4b1"
   },
   "appVersion": "1.0.0",
   "supportEmail": "support@slnicbridge.com",
