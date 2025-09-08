@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path/path.dart' as path;
 import '../constants/api_endpoints.dart';
-import '../constants/app_keys.dart';
 
 class FileUploadService {
   final Dio _dio;

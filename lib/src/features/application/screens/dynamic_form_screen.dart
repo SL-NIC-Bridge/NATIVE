@@ -114,6 +114,8 @@ class DynamicFormScreen extends ConsumerWidget {
             duration: const Duration(seconds: 4),
           ),
         );
+
+        context.pop();
       } else {
         // Use direct repository submission for forms without files
         final appConfig = await ref.read(formConfigProvider.future);
