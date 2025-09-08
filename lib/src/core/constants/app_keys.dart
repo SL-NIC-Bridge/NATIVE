@@ -1,6 +1,7 @@
 class AppKeys {
   // Storage Keys
-  static const String authToken = 'auth_token';
+  static const String authToken = 'accessToken';
+  static const String refreshToken = 'refreshToken';
   static const String themeMode = 'theme_mode';
   static const String userProfile = 'user_profile';
   static const String locale = 'app_locale';
