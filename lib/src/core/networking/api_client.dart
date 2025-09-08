@@ -109,35 +109,68 @@ class AuthInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     if (err.response?.statusCode == 401) {
-      try {
-        // Token expired or invalid, clear it
-        await _storage.delete(key: AppKeys.authToken);
-        
-        // Optionally trigger logout or redirect to login
-        // You might want to use a router or auth state provider here
-        // ref.read(authStateProvider.notifier).logout();
-        
-      } catch (e) {
-        debugPrint('Failed to clear auth token: $e');
+      // Check if it's a token expiration error vs. other 401 errors
+      final responseData = err.response?.data;
+      if (responseData is Map && responseData['error']?['code'] == 'TOKEN_EXPIRED') {
+        try {
+          // Token expired, try to refresh it
+          final refreshToken = await _storage.read(key: AppKeys.refreshToken);
+          
+          if (refreshToken != null && refreshToken.isNotEmpty) {
+            // Create a new dio instance for refresh request to avoid infinite loops
+            final config = await ref.read(appConfigProvider.future);
+            final refreshDio = Dio(BaseOptions(
+              baseUrl: config.apiBaseUrl,
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+            ));
+            
+            // Make refresh token request
+            final refreshResponse = await refreshDio.post('/auth/refresh', data: {
+              'refreshToken': refreshToken,
+            });
+            
+            if (refreshResponse.statusCode == 200) {
+              final data = refreshResponse.data;
+              final newAccessToken = data['accessToken'] ?? data['token'];
+              final newRefreshToken = data['refreshToken'];
+              
+              if (newAccessToken != null) {
+                // Store new tokens
+                await _storage.write(key: AppKeys.authToken, value: newAccessToken);
+                if (newRefreshToken != null) {
+                  await _storage.write(key: AppKeys.refreshToken, value: newRefreshToken);
+                }
+                
+                // Retry the original request with new token
+                final requestOptions = err.requestOptions;
+                requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
+                
+                final response = await Dio().fetch(requestOptions);
+                handler.resolve(response);
+                return;
+              }
+            }
+          }
+          
+          // If refresh failed or no refresh token, clear tokens and force re-login
+          await _storage.delete(key: AppKeys.authToken);
+          await _storage.delete(key: AppKeys.refreshToken);
+          
+        } catch (e) {
+          debugPrint('Failed to refresh token: $e');
+          // Clear tokens on refresh failure
+          await _storage.delete(key: AppKeys.authToken);
+          await _storage.delete(key: AppKeys.refreshToken);
+        }
+      } else {
+        // For other 401 errors (e.g., invalid token), don't automatically clear it
+        // The request might be unauthorized for other reasons
+        debugPrint('Received 401 Unauthorized, but not a token expiration error.');
       }
     }
     handler.next(err);
-  }
-
-  @override
-  Future<void> onResponse(
-    Response response,
-    ResponseInterceptorHandler handler,
-  ) async {
-    // Optionally handle token refresh here
-    final newToken = response.headers.value('x-new-token');
-    if (newToken != null) {
-      try {
-        await _storage.write(key: AppKeys.authToken, value: newToken);
-      } catch (e) {
-        debugPrint('Failed to save new auth token: $e');
-      }
-    }
-    handler.next(response);
   }
 }
