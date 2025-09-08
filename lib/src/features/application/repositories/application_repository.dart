@@ -1,3 +1,4 @@
+import 'package:sl_nic_bridge/src/core/constants/api_endpoints.dart';
 import '../models/application_model.dart';
 import '../../../core/networking/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,11 +17,35 @@ class ApplicationRepository {
 
   Future<Application?> getCurrentApplication() async {
     try {
-      final response = await _dio.get('$_baseUrl/current');
+      final response = await _dio.get(ApiEndpoints.getCurrentApplication);
       if (response.statusCode == 404) {
         return null;
       }
-      return Application.fromJson(response.data);
+      
+      // Handle the nested response structure from backend
+      final responseData = response.data;
+      if (responseData is Map<String, dynamic> && responseData['success'] == true) {
+        final applicationData = responseData['data'] as Map<String, dynamic>;
+        
+        // Transform the backend response to match our model structure
+        final transformedData = {
+          'id': applicationData['id'],
+          'userId': applicationData['userId'],
+          'formId': applicationData['applicationType'], // Map applicationType to formId
+          'status': applicationData['currentStatus']?.toString().toLowerCase() ?? 'submitted', // Map currentStatus to status
+          'formData': applicationData['applicationData'] ?? {},
+          'createdAt': applicationData['createdAt'],
+          'updatedAt': applicationData['updatedAt'],
+          'rejectionReason': applicationData['rejectionReason'],
+          'workflowSteps': [], // Default empty array since backend doesn't return this yet
+          'submittedAt': applicationData['createdAt'], // Use createdAt as submittedAt for now
+          'comments': applicationData['comments'],
+        };
+        
+        return Application.fromJson(transformedData);
+      }
+      
+      return null;
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
         return null;
@@ -35,19 +60,23 @@ class ApplicationRepository {
     return data.map((json) => Application.fromJson(json)).toList();
   }
 
-  Future<Application> submitApplication({
-    required String? previousNicNumber,
-    required String permanentAddress,
-    required DateTime dateOfBirth,
-    required String placeOfBirth,
+
+  /// New method to submit application with complete form data
+  /// This handles the dynamic form submissions with all field data
+  Future<Map<String, dynamic>> submitApplication({
+    required String formType,
+    required Map<String, dynamic> formData,
   }) async {
-    final response = await _dio.post(_baseUrl, data: {
-      'previousNicNumber': previousNicNumber,
-      'permanentAddress': permanentAddress,
-      'dateOfBirth': dateOfBirth.toIso8601String(),
-      'placeOfBirth': placeOfBirth,
+    // Remove file references from form data before submission
+    final dataForSubmission = Map<String, dynamic>.from(formData)
+      ..removeWhere((key, value) =>
+          value is Map<String, dynamic> && value['type'] == 'file_reference');
+
+    final response = await _dio.post(ApiEndpoints.submitApplication, data: {
+      'applicationType': formType,
+      'applicationData': dataForSubmission,
     });
-    return Application.fromJson(response.data);
+    return response.data as Map<String, dynamic>;
   }
 
   Future<void> cancelApplication(String id) async {
