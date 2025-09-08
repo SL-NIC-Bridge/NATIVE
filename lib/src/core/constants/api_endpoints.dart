@@ -18,8 +18,9 @@ class ApiEndpoints {
   static const String updateProfile = '$auth/profile';
   
   // Application endpoints
-  static const String submitApplication = '$applications/submit';
+  static const String submitApplication = '$applications';
   static const String getApplications = '$applications';
+  static const String getCurrentApplication = '$applications/current';
   static String getApplicationById(String id) => '$applications/$id';
   static String updateApplicationStatus(String id) => '$applications/$id/status';
   static String getApplicationsByStatus(String status) => '$applications?status=$status';
