@@ -49,9 +49,19 @@ class AuthRepository {
         'password': password,
       });
 
-      // Handle direct response structure from your API
-      if (response.data['success'] == true && response.data['data'] != null) {
-        return AuthResponse.fromJson(response.data['data']);
+      // The backend sends the AuthResponse data directly.
+      if (response.statusCode == 200 || response.statusCode == 201) {
+         // Check if the response is wrapped in a 'data' object or not
+        final responseData = response.data;
+        if (responseData is Map<String, dynamic> && responseData.containsKey('data') && responseData['data'] is Map<String, dynamic>) {
+          // Handle cases where it might be wrapped, e.g., { success: true, data: { ... } }
+          return AuthResponse.fromJson(responseData['data']);
+        } else if (responseData is Map<String, dynamic>) {
+           // Handle direct response: { user: {...}, accessToken: "..." }
+          return AuthResponse.fromJson(responseData);
+        } else {
+          throw Exception('Invalid response format from server');
+        }
       } else {
         throw Exception(response.data['message'] ?? 'Login failed');
       }
