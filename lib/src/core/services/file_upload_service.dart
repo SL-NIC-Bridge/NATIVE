@@ -1,50 +1,49 @@
 import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path/path.dart' as path;
+import '../constants/api_endpoints.dart';
+import '../constants/app_keys.dart';
 
 class FileUploadService {
-  final String baseUrl;
+  final Dio _dio;
   
-  FileUploadService({required this.baseUrl});
+  FileUploadService(this._dio);
 
   Future<Map<String, dynamic>> uploadFile(Map<String, dynamic> fileData) async {
     final file = File(fileData['path']);
     final filename = fileData['name'] ?? path.basename(file.path);
-    final mimeType = fileData['mimeType'] ?? 'application/octet-stream';
+    final fieldKey = fileData['fieldKey'] as String?; // Get the fieldKey from the map
+    final applicationId = fileData['applicationId'] as String?; // Get applicationId
 
-    // Create multipart request
-    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload'));
-
-    // Add file
-    final stream = http.ByteStream(file.openRead());
-    final length = await file.length();
-
-    final multipartFile = http.MultipartFile(
-      'file',
-      stream,
-      length,
-      filename: filename,
-      contentType: MediaType.parse(mimeType),
-    );
-
-    request.files.add(multipartFile);
-
-    // Add any additional metadata if needed
-    request.fields['originalName'] = filename;
-    request.fields['mimeType'] = mimeType;
+    // Create FormData for Dio multipart upload
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(
+        file.path,
+        filename: filename,
+      ),
+      'originalName': filename,
+      'attachmentType': 'APPLICATION_ATTACHMENT', // Add static attachmentType
+      if (fieldKey != null) 'fieldKey': fieldKey, // Add the dynamic fieldKey
+      if (applicationId != null) 'applicationId': applicationId, // Add applicationId
+    });
 
     try {
-      final response = await request.send();
+      final response = await _dio.post(
+        ApiEndpoints.uploadDocument,
+        data: formData,
+      );
       
-      if (response.statusCode != 200) {
-        throw Exception('Failed to upload file: ${response.statusCode}');
-      }
-
-      final responseData = await response.stream.bytesToString();
       return {
         'success': true,
-        'data': responseData,
+        'data': response.data,
+        'url': response.data['url'] ?? response.data['id'], // Backend should return file URL or ID
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'error': 'Upload failed: ${e.message}',
+        'statusCode': e.response?.statusCode,
       };
     } catch (e) {
       return {
@@ -57,13 +56,24 @@ class FileUploadService {
   Future<List<Map<String, dynamic>>> uploadMultipleFiles(
     List<Map<String, dynamic>> filesData
   ) async {
+    print('FileUploadService - Uploading ${filesData.length} files');
     final results = <Map<String, dynamic>>[];
     
-    for (final fileData in filesData) {
+    for (int i = 0; i < filesData.length; i++) {
+      final fileData = filesData[i];
       try {
+        print('FileUploadService - Uploading file ${i + 1}/${filesData.length}: ${fileData['name']}');
         final result = await uploadFile(fileData);
         results.add(result);
+        
+        // If upload failed, log it
+        if (result['success'] != true) {
+          print('FileUploadService - File ${i + 1} upload failed: ${result['error']}');
+        } else {
+          print('FileUploadService - File ${i + 1} upload succeeded');
+        }
       } catch (e) {
+        print('FileUploadService - File ${i + 1} upload exception: $e');
         results.add({
           'success': false,
           'error': e.toString(),
@@ -72,6 +82,7 @@ class FileUploadService {
       }
     }
 
+    print('FileUploadService - Multiple upload completed. Successful: ${results.where((r) => r['success'] == true).length}/${results.length}');
     return results;
   }
 }
