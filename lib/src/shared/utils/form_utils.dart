@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart' hide FormField;
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sl_nic_bridge/src/core/config/field_type.dart';
 import '../../core/config/form_config_model.dart';
+import '../../core/config/form_config_entry.dart';
 
 class FormUtils {
   /// Validates a single field value against its validation rules
@@ -96,8 +99,8 @@ class FormUtils {
   }
 
   /// Gets form configuration by form type ID
-  static Map<String, dynamic>? getFormConfig(FormConfig formConfig, String formTypeId) {
-    return formConfig.formConfigs[formTypeId] as Map<String, dynamic>?;
+  static FormConfigEntry? getFormConfig(FormConfig formConfig, String formTypeId) {
+    return formConfig.formConfigs[formTypeId];
   }
 
   /// Gets all available form types
@@ -106,15 +109,12 @@ class FormUtils {
   }
 
   /// Parses steps from form configuration
-  static List<FormStep> parseFormSteps(Map<String, dynamic>? formConfigData) {
-    if (formConfigData == null || !formConfigData.containsKey('steps')) {
+  static List<FormStep> parseFormSteps(FormConfigEntry? formConfigEntry) {
+    if (formConfigEntry == null) {
       return [];
     }
     
-    final stepsData = formConfigData['steps'] as List?;
-    if (stepsData == null) return [];
-    
-    return stepsData.map((stepData) => FormStep.fromJson(stepData)).toList();
+    return formConfigEntry.steps;
   }
 
   /// Validates an entire form step
@@ -140,8 +140,8 @@ class FormUtils {
     Map<String, dynamic> formData
   ) {
     final errors = <String, String>{};
-    final formConfigData = getFormConfig(formConfig, formType.id);
-    final steps = parseFormSteps(formConfigData);
+    final formConfigEntry = getFormConfig(formConfig, formType.id);
+    final steps = parseFormSteps(formConfigEntry);
     
     for (final step in steps) {
       final stepErrors = validateFormStep(step, formData);
@@ -157,8 +157,8 @@ class FormUtils {
     Map<String, dynamic> rawFormData
   ) {
     final cleanedData = <String, dynamic>{};
-    final formConfigData = getFormConfig(formConfig, formTypeId);
-    final steps = parseFormSteps(formConfigData);
+    final formConfigEntry = getFormConfig(formConfig, formTypeId);
+    final steps = parseFormSteps(formConfigEntry);
     
     for (final step in steps) {
       for (final field in step.fields) {
@@ -281,17 +281,15 @@ class FormUtils {
 
   /// Merges common fields with form-specific field overrides
   static FormField mergeCommonField(
-    Map<String, dynamic> commonFieldData,
-    Map<String, dynamic>? fieldVariationData
+    FormField commonField,
+    FormFieldVariation? fieldVariation
   ) {
-    final mergedData = Map<String, dynamic>.from(commonFieldData);
-    
-    if (fieldVariationData != null) {
-      // Merge field variation data, overriding common field properties
-      mergedData.addAll(fieldVariationData);
+    if (fieldVariation == null) {
+      return commonField;
     }
     
-    return FormField.fromJson(mergedData);
+    // Return the field variation since it extends the common field
+    return fieldVariation;
   }
 
   /// Gets a processed FormField with common fields and variations applied
@@ -300,12 +298,12 @@ class FormUtils {
     String fieldId
   ) {
     // Check if it's in common fields
-    final commonFieldData = formConfig.commonFields[fieldId] as Map<String, dynamic>?;
+    final commonField = formConfig.commonFields[fieldId];
     
-    if (commonFieldData != null) {
+    if (commonField != null) {
       // Check for field variations
-      final fieldVariationData = formConfig.fieldVariations?[fieldId] as Map<String, dynamic>?;
-      return mergeCommonField(commonFieldData, fieldVariationData);
+      final fieldVariation = formConfig.fieldVariations[fieldId];
+      return mergeCommonField(commonField, fieldVariation);
     }
     
     return null;
