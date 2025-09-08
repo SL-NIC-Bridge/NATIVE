@@ -26,26 +26,26 @@ class ApplicationStatusCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Application #${application.id}',
+                  'ID: ${application.id}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(application.status).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    application.status.toString().split('.').last.toUpperCase(),
-                    style: TextStyle(
-                      color: _getStatusColor(application.status),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
+                // Container(
+                //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                //   decoration: BoxDecoration(
+                //     color: _getStatusColor(application.status).withValues(alpha: 0.1),
+                //     borderRadius: BorderRadius.circular(12),
+                //   ),
+                //   child: Text(
+                //     application.status.toString().split('.').last.toUpperCase(),
+                //     style: TextStyle(
+                //       color: _getStatusColor(application.status),
+                //       fontWeight: FontWeight.bold,
+                //       fontSize: 12,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
             const SizedBox(height: 16),
