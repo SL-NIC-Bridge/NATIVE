@@ -106,6 +106,33 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
     }
   }
 
+  Future<void> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? phone,
+    String? divisionId,
+  }) async {
+    try {
+      final authRepository = await _ref.read(authRepositoryProvider.future);
+      final updatedUser = await authRepository.updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phone: phone,
+        divisionId: divisionId,
+      );
+      
+      // Update the current state with the new user data
+      final currentState = state.value;
+      if (currentState != null) {
+        state = AsyncValue.data(currentState.copyWith(user: updatedUser));
+      }
+    } catch (e) {
+      throw Exception('Failed to update profile: ${e.toString()}');
+    }
+  }
+
   Future<void> logout() async {
     await _storage.delete(key: AppKeys.authToken);
     state = const AsyncValue.data(AuthState());
