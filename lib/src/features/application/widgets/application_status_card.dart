@@ -26,7 +26,7 @@ class ApplicationStatusCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'ID: ${application.id}',
+                  'ID: ${application.id.toUpperCase()}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -145,6 +145,16 @@ class ApplicationStatusCard extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    // Format: DD MMM YYYY (e.g., 13 Sep 2025)
+    final day = date.day.toString().padLeft(2, '0');
+    final month = _getMonthName(date.month);
+    final year = date.year;
+    
+    return '$day $month $year';
+  }
+  
+  String _getMonthName(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
   }
 }
