@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/services/ocr_service.dart';
+import '../../../core/config/ocr_config_model.dart';
 import '../custom_button.dart';
 
 class OCRDocumentCapture extends StatefulWidget {
@@ -9,6 +10,7 @@ class OCRDocumentCapture extends StatefulWidget {
   final Function(Map<String, dynamic> extractedData) onDataExtracted;
   final VoidCallback? onSkip;
   final bool isOptional;
+  final OCRConfiguration? ocrConfig;
 
   const OCRDocumentCapture({
     super.key,
@@ -17,6 +19,7 @@ class OCRDocumentCapture extends StatefulWidget {
     required this.onDataExtracted,
     this.onSkip,
     this.isOptional = false,
+    this.ocrConfig,
   });
 
   @override
@@ -42,7 +45,9 @@ class _OCRDocumentCaptureState extends State<OCRDocumentCapture> {
       }
 
       final extractedText = result['extractedText'] as String;
-      final parsedData = OCRService.parseNICDocumentText(extractedText);
+      
+      // Use configuration-based parsing if available, otherwise fallback to hardcoded
+      final parsedData = OCRService.parseDocumentTextWithConfig(extractedText, widget.ocrConfig);
       
       setState(() {
         _parsedData = parsedData;
@@ -53,9 +58,25 @@ class _OCRDocumentCaptureState extends State<OCRDocumentCapture> {
       setState(() => _isProcessing = false);
       
       if (mounted) {
+        // Try to get a more specific error message from config
+        String errorMessage = 'Error processing document: $e';
+        
+        if (widget.ocrConfig != null) {
+          final troubleshooting = widget.ocrConfig!.userGuidance.troubleshooting;
+          
+          // Check for specific error types and provide helpful messages
+          if (e.toString().toLowerCase().contains('quality') || 
+              e.toString().toLowerCase().contains('blur')) {
+            errorMessage = troubleshooting['poorQuality'] ?? errorMessage;
+          } else if (e.toString().toLowerCase().contains('text') || 
+                     e.toString().toLowerCase().contains('empty')) {
+            errorMessage = troubleshooting['noTextFound'] ?? errorMessage;
+          }
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error processing document: $e'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );
@@ -124,6 +145,42 @@ class _OCRDocumentCaptureState extends State<OCRDocumentCapture> {
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
+                    
+                    // Show capture instructions from config if available
+                    if (widget.ocrConfig?.userGuidance.captureInstructions.isNotEmpty ?? false) ...[
+                      const SizedBox(height: 16),
+                      const Divider(),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Capture Tips:',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      ...widget.ocrConfig!.userGuidance.captureInstructions.map((instruction) =>
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.check_circle_outline,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  instruction,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -272,12 +329,53 @@ class _OCRDocumentCaptureState extends State<OCRDocumentCapture> {
                   if (_parsedData!.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Text(
-                        'No recognizable data found. You can retry or proceed to fill the form manually.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                        textAlign: TextAlign.center,
+                      child: Column(
+                        children: [
+                          Text(
+                            'No recognizable data found. You can retry or proceed to fill the form manually.',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          
+                          // Show troubleshooting tips if available in config
+                          if (widget.ocrConfig?.userGuidance.troubleshooting.isNotEmpty ?? false) ...[
+                            const SizedBox(height: 12),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Troubleshooting Tips:',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...widget.ocrConfig!.userGuidance.troubleshooting.entries.map((entry) =>
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.lightbulb_outline,
+                                      size: 16,
+                                      color: Colors.amber,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        entry.value,
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                 ],

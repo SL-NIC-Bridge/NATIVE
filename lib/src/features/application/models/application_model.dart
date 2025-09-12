@@ -61,15 +61,15 @@ class WorkflowStep {
 }
 
 enum ApplicationStatus {
-  @JsonValue('draft')
-  draft,
-  @JsonValue('submitted')
-  submitted,
-  @JsonValue('under_review')
+  @JsonValue('SENT_TO_DRP')
+  completed,
+  @JsonValue('SUBMITTED')
+  pending,
+  @JsonValue('APPROVED_BY_GN')
   underReview,
-  @JsonValue('approved')
-  approved,
-  @JsonValue('rejected')
+  @JsonValue('ON_HOLD_BY_DS')
+  onHold,
+  @JsonValue('REJECTED_BY_GN')
   rejected,
 }
 

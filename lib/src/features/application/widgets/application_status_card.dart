@@ -101,13 +101,13 @@ class ApplicationStatusCard extends StatelessWidget {
 
   Color _getStatusColor(ApplicationStatus status) {
     switch (status) {
-      case ApplicationStatus.draft:
+      case ApplicationStatus.pending:
         return Colors.grey;
-      case ApplicationStatus.submitted:
-        return Colors.blue;
       case ApplicationStatus.underReview:
+        return Colors.blue;
+      case ApplicationStatus.onHold:
         return Colors.orange;
-      case ApplicationStatus.approved:
+      case ApplicationStatus.completed:
         return Colors.green;
       case ApplicationStatus.rejected:
         return Colors.red;
@@ -116,13 +116,13 @@ class ApplicationStatusCard extends StatelessWidget {
 
   IconData _getStatusIcon(ApplicationStatus status) {
     switch (status) {
-      case ApplicationStatus.draft:
+      case ApplicationStatus.pending:
         return Icons.edit;
-      case ApplicationStatus.submitted:
-        return Icons.send;
       case ApplicationStatus.underReview:
+        return Icons.send;
+      case ApplicationStatus.onHold:
         return Icons.hourglass_empty;
-      case ApplicationStatus.approved:
+      case ApplicationStatus.completed:
         return Icons.check_circle;
       case ApplicationStatus.rejected:
         return Icons.cancel;
@@ -131,14 +131,14 @@ class ApplicationStatusCard extends StatelessWidget {
 
   String _getStatusText(ApplicationStatus status) {
     switch (status) {
-      case ApplicationStatus.draft:
-        return 'Draft - Complete your application';
-      case ApplicationStatus.submitted:
-        return 'Submitted - Under review';
+      case ApplicationStatus.pending:
+        return 'Submitted - Waiting for review';
       case ApplicationStatus.underReview:
-        return 'Under Review - Being processed';
-      case ApplicationStatus.approved:
-        return 'Approved - Congratulations!';
+        return 'Processing - Under review';
+      case ApplicationStatus.onHold:
+        return 'On Hold - Being processed';
+      case ApplicationStatus.completed:
+        return 'Completed - Congratulations!';
       case ApplicationStatus.rejected:
         return 'Rejected - Please review';
     }

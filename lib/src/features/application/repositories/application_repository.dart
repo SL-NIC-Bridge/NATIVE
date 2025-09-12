@@ -32,7 +32,7 @@ class ApplicationRepository {
           'id': applicationData['id'],
           'userId': applicationData['userId'],
           'formId': applicationData['applicationType'], // Map applicationType to formId
-          'status': applicationData['currentStatus']?.toString().toLowerCase() ?? 'submitted', // Map currentStatus to status
+          'status': applicationData['currentStatus'] ?? '', // Map currentStatus to status
           'formData': applicationData['applicationData'] ?? {},
           'createdAt': applicationData['createdAt'],
           'updatedAt': applicationData['updatedAt'],

@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../config/ocr_config_model.dart';
 
 class OCRService {
   static final TextRecognizer _textRecognizer = TextRecognizer();
@@ -55,6 +56,161 @@ class OCRService {
     }
   }
   
+  
+  /// Parse extracted text to form data based on configured extraction rules
+  static Map<String, dynamic> parseDocumentTextWithConfig(
+    String extractedText, 
+    OCRConfiguration? config
+  ) {
+    if (config == null) {
+      // Fallback to the hardcoded parsing if no config is available
+      return parseNICDocumentText(extractedText);
+    }
+
+    final Map<String, dynamic> parsedData = {};
+    
+    try {
+      // Clean and normalize text
+      final cleanText = extractedText.replaceAll('\n', ' ').trim();
+      final lines = extractedText.split('\n').map((line) => line.trim()).toList();
+      
+      // Sort extraction rules by priority (lower number = higher priority)
+      final sortedRules = config.extractionRules.entries.toList()
+        ..sort((a, b) => a.value.priority.compareTo(b.value.priority));
+      
+      for (final ruleEntry in sortedRules) {
+        final fieldName = ruleEntry.key;
+        final rule = ruleEntry.value;
+        
+        // Try each pattern for this field
+        String? extractedValue;
+        for (final patternStr in rule.patterns) {
+          try {
+            final pattern = RegExp(patternStr, caseSensitive: false);
+            final match = pattern.firstMatch(cleanText);
+            
+            if (match != null) {
+              // Use the first capture group if available, otherwise the full match
+              extractedValue = match.groupCount > 0 ? match.group(1) : match.group(0);
+              if (extractedValue != null && extractedValue.trim().isNotEmpty) {
+                break;
+              }
+            }
+          } catch (e) {
+            developer.log('Error processing pattern "$patternStr" for field $fieldName: $e', name: 'OCRService');
+          }
+        }
+        
+        if (extractedValue != null && extractedValue.trim().isNotEmpty) {
+          // Apply processing hints
+          extractedValue = _applyProcessingHints(extractedValue, rule.processingHints, fieldName);
+          
+          // Store the extracted value using the field mapping
+          parsedData[rule.fieldMapping] = extractedValue;
+          
+          developer.log('Extracted $fieldName: $extractedValue', name: 'OCRService');
+        }
+      }
+      
+      // Additional processing for complex fields like addresses
+      if (config.extractionRules.containsKey('address') || 
+          config.extractionRules.containsKey('houseNumber') ||
+          config.extractionRules.containsKey('street')) {
+        _extractAddressComponentsWithConfig(lines, parsedData, config);
+      }
+      
+      developer.log('Parsed OCR data with config: $parsedData', name: 'OCRService');
+      
+    } catch (e) {
+      developer.log('Error parsing OCR text with config: $e', name: 'OCRService');
+    }
+    
+    return parsedData;
+  }
+
+  /// Apply processing hints to extracted values
+  static String _applyProcessingHints(String value, List<String> hints, String fieldName) {
+    String processedValue = value.trim();
+    
+    for (final hint in hints) {
+      switch (hint) {
+        case 'uppercase_transformation':
+          processedValue = processedValue.toUpperCase();
+          break;
+        case 'title_case_transformation':
+          processedValue = _toTitleCase(processedValue);
+          break;
+        case 'remove_spaces':
+          processedValue = processedValue.replaceAll(' ', '');
+          break;
+        case 'normalize_gender':
+          if (fieldName == 'sex') {
+            final normalized = processedValue.toLowerCase();
+            processedValue = (normalized.startsWith('m')) ? 'male' : 'female';
+          }
+          break;
+        case 'convert_to_iso_format':
+          if (fieldName.contains('date') || fieldName.contains('birth')) {
+            final parsedDate = _parseDate(processedValue);
+            if (parsedDate != null) {
+              processedValue = parsedDate;
+            }
+          }
+          break;
+        case 'validate_nic_checksum':
+          // Could add NIC validation here
+          break;
+        case 'first_uppercase_sequence':
+        case 'middle_name_parts':
+        case 'last_uppercase_sequence':
+        case 'longest_name_part':
+          // These are handled during name extraction
+          break;
+      }
+    }
+    
+    return processedValue;
+  }
+
+  /// Convert string to title case
+  static String _toTitleCase(String text) {
+    if (text.isEmpty) return text;
+    return text.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+  }
+
+  /// Extract address components using configuration rules
+  static void _extractAddressComponentsWithConfig(
+    List<String> lines, 
+    Map<String, dynamic> parsedData, 
+    OCRConfiguration config
+  ) {
+    // If specific address extraction wasn't already done by patterns, try heuristic approach
+    for (final line in lines) {
+      final cleanLine = line.trim();
+      if (cleanLine.isEmpty) continue;
+      
+      // House number pattern (numbers + optional letters at start of line)
+      if (RegExp(r'^\d+[A-Z]?\s').hasMatch(cleanLine) && !parsedData.containsKey('houseNumber')) {
+        final parts = cleanLine.split(' ');
+        parsedData['houseNumber'] = parts.first;
+        if (parts.length > 1 && !parsedData.containsKey('street')) {
+          parsedData['street'] = parts.sublist(1).join(' ');
+        }
+        continue;
+      }
+      
+      // Look for city/village patterns (often end with common suffixes)
+      if (RegExp(r'\b(town|city|village|grama|watta)\b', caseSensitive: false).hasMatch(cleanLine) && 
+          !parsedData.containsKey('city')) {
+        parsedData['city'] = cleanLine;
+        continue;
+      }
+    }
+  }
+
   /// Parse extracted text to form data based on Sri Lankan NIC document patterns
   static Map<String, dynamic> parseNICDocumentText(String extractedText) {
     final Map<String, dynamic> parsedData = {};

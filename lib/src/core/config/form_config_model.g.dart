@@ -117,6 +117,12 @@ FormConfig _$FormConfigFromJson(Map<String, dynamic> json) => FormConfig(
   formConfigs: (json['formConfigs'] as Map<String, dynamic>).map(
     (k, e) => MapEntry(k, FormConfigEntry.fromJson(e as Map<String, dynamic>)),
   ),
+  ocrConfigurations:
+      (json['ocrConfigurations'] as Map<String, dynamic>?)?.map(
+        (k, e) =>
+            MapEntry(k, OCRConfiguration.fromJson(e as Map<String, dynamic>)),
+      ) ??
+      const {},
 );
 
 Map<String, dynamic> _$FormConfigToJson(
@@ -128,4 +134,7 @@ Map<String, dynamic> _$FormConfigToJson(
   ),
   'formTypes': instance.formTypes.map((e) => e.toJson()).toList(),
   'formConfigs': instance.formConfigs.map((k, e) => MapEntry(k, e.toJson())),
+  'ocrConfigurations': instance.ocrConfigurations.map(
+    (k, e) => MapEntry(k, e.toJson()),
+  ),
 };

@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'field_type.dart';
 import 'field_dependency.dart';
 import 'form_config_entry.dart';
+import 'ocr_config_model.dart';
 
 part 'form_config_model.g.dart';
 
@@ -148,12 +149,14 @@ class FormConfig {
   final Map<String, FormFieldVariation> fieldVariations;
   final List<FormType> formTypes;
   final Map<String, FormConfigEntry> formConfigs;
+  final Map<String, OCRConfiguration> ocrConfigurations;
 
   FormConfig({
     required this.commonFields,
     required this.fieldVariations,
     required this.formTypes,
     required this.formConfigs,
+    this.ocrConfigurations = const {},
   });
 
   factory FormConfig.fromJson(Map<String, dynamic> json) {
@@ -214,11 +217,27 @@ class FormConfig {
       );
     });
 
+    // Parse OCR configurations if available
+    final ocrConfigurations = <String, OCRConfiguration>{};
+    final ocrConfigsJson = json['ocrConfigurations'] as Map<String, dynamic>?;
+    if (ocrConfigsJson != null) {
+      for (final entry in ocrConfigsJson.entries) {
+        try {
+          final config = OCRConfiguration.fromJson(entry.value as Map<String, dynamic>);
+          ocrConfigurations[entry.key] = config;
+        } catch (e) {
+          // Log error but continue processing
+          print('Warning: Failed to parse OCR config for ${entry.key}: $e');
+        }
+      }
+    }
+
     return FormConfig(
       commonFields: commonFields,
       fieldVariations: fieldVariations,
       formTypes: formTypes,
       formConfigs: formConfigs,
+      ocrConfigurations: ocrConfigurations,
     );
   }
 

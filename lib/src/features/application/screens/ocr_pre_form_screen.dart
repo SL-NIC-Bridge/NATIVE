@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/config/ocr_config_provider.dart';
+import '../../../core/config/form_config_provider.dart';
 import '../../../shared/widgets/ocr/ocr_document_capture.dart';
 
 class OCRPreFormScreen extends ConsumerStatefulWidget {
@@ -59,12 +61,51 @@ class _OCRPreFormScreenState extends ConsumerState<OCRPreFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return OCRDocumentCapture(
-      title: _getDocumentTitle(),
-      description: _getDocumentTypeDescription(),
-      onDataExtracted: _handleOCRDataExtracted,
-      onSkip: _skipOCR,
-      isOptional: true,
+    // Try OCR config provider first
+    final ocrConfig = ref.watch(ocrConfigForFormProvider(widget.formType));
+    
+    // Fallback to form config provider if OCR config provider doesn't have data
+    final formConfigAsync = ref.watch(formConfigProvider);
+    
+    return formConfigAsync.when(
+      data: (formConfig) {
+        // Get OCR config from form config if not available from OCR provider
+        final finalOcrConfig = ocrConfig ?? formConfig.ocrConfigurations[widget.formType];
+        
+        // Use config values if available, otherwise fallback to hardcoded values
+        final title = finalOcrConfig?.title ?? _getDocumentTitle();
+        final description = finalOcrConfig?.description ?? _getDocumentTypeDescription();
+        
+        return OCRDocumentCapture(
+          title: title,
+          description: description,
+          onDataExtracted: _handleOCRDataExtracted,
+          onSkip: _skipOCR,
+          isOptional: true,
+          ocrConfig: finalOcrConfig, // Pass the configuration to the capture widget
+        );
+      },
+      loading: () => Scaffold(
+        appBar: AppBar(
+          title: Text(_getDocumentTitle()),
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: _skipOCR,
+          ),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stackTrace) {
+        // Fallback to hardcoded values if config fails to load
+        return OCRDocumentCapture(
+          title: _getDocumentTitle(),
+          description: _getDocumentTypeDescription(),
+          onDataExtracted: _handleOCRDataExtracted,
+          onSkip: _skipOCR,
+          isOptional: true,
+          ocrConfig: null,
+        );
+      },
     );
   }
 }

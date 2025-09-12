@@ -181,11 +181,11 @@ class ApplicationStatusScreen extends ConsumerWidget {
 
   Color _getStatusColor(ApplicationStatus status) {
     switch (status) {
-      case ApplicationStatus.submitted:
+      case ApplicationStatus.onHold:
         return Colors.orange;
       case ApplicationStatus.underReview:
         return Colors.blue;
-      case ApplicationStatus.approved:
+      case ApplicationStatus.completed:
         return Colors.green;
       case ApplicationStatus.rejected:
         return Colors.red;

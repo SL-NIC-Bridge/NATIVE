@@ -40,11 +40,11 @@ Map<String, dynamic> _$ApplicationToJson(Application instance) =>
     };
 
 const _$ApplicationStatusEnumMap = {
-  ApplicationStatus.draft: 'draft',
-  ApplicationStatus.submitted: 'submitted',
-  ApplicationStatus.underReview: 'under_review',
-  ApplicationStatus.approved: 'approved',
-  ApplicationStatus.rejected: 'rejected',
+  ApplicationStatus.completed: 'SENT_TO_DRP',
+  ApplicationStatus.pending: 'SUBMITTED',
+  ApplicationStatus.underReview: 'APPROVED_BY_GN',
+  ApplicationStatus.onHold: 'ON_HOLD_BY_DS',
+  ApplicationStatus.rejected: 'REJECTED_BY_GN',
 };
 
 WorkflowStep _$WorkflowStepFromJson(Map<String, dynamic> json) => WorkflowStep(

@@ -161,7 +161,7 @@ class DynamicFormScreen extends ConsumerWidget {
       if (!context.mounted) return;
 
       // Navigate back to dashboard
-      context.pop();
+      context.go(AppRoutes.dashboard);
       
     } catch (e) {
       if (!context.mounted) return;
