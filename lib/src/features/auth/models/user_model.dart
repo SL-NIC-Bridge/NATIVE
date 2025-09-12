@@ -11,7 +11,6 @@ class User {
   final String? role;
   final String phone;
   final String? currentStatus;
-  final String divisionId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -23,7 +22,6 @@ class User {
     this.role,
     required this.phone,
     this.currentStatus,
-    required this.divisionId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -42,7 +40,6 @@ class User {
     String? role,
     String? phone,
     String? currentStatus,
-    String? divisionId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -54,7 +51,6 @@ class User {
       role: role ?? this.role,
       phone: phone ?? this.phone,
       currentStatus: currentStatus ?? this.currentStatus,
-      divisionId: divisionId ?? this.divisionId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
