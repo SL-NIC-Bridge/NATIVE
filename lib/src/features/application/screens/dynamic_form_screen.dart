@@ -115,7 +115,9 @@ class DynamicFormScreen extends ConsumerWidget {
           ),
         );
 
-        context.pop();
+        // refesh current application status
+        ref.invalidate(applicationStatusProvider);
+        context.go(AppRoutes.dashboard);
       } else {
         // Use direct repository submission for forms without files
         final appConfig = await ref.read(formConfigProvider.future);
