@@ -7,13 +7,86 @@ import 'package:sl_nic_bridge/src/features/application/models/application_model.
 import '../providers/application_provider.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/errors/app_error.dart';
+import '../../../core/router/route_observer.dart';
 import '../../../shared/widgets/custom_button.dart';
 
-class ApplicationStatusScreen extends ConsumerWidget {
+class ApplicationStatusScreen extends ConsumerStatefulWidget {
   const ApplicationStatusScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ApplicationStatusScreen> createState() => _ApplicationStatusScreenState();
+}
+
+class _ApplicationStatusScreenState extends ConsumerState<ApplicationStatusScreen> with WidgetsBindingObserver, RouteAware {
+  bool _isFirstLoad = true;
+  RouteObserver<PageRoute>? _routeObserver;
+
+  @override
+  void initState() {
+    super.initState();
+    // Register for lifecycle events
+    WidgetsBinding.instance.addObserver(this);
+    // We'll refresh in didChangeDependencies instead
+  }
+
+  @override
+  void dispose() {
+    // Unregister from lifecycle events
+    WidgetsBinding.instance.removeObserver(this);
+    // Unsubscribe from route observer if we were subscribed
+    if (_routeObserver != null) {
+      _routeObserver!.unsubscribe(this);
+    }
+    super.dispose();
+  }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Refresh when app is resumed from background
+    if (state == AppLifecycleState.resumed) {
+      _refreshApplicationStatus();
+    }
+  }
+
+  // Use this method for initial load and subsequent dependency changes
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Subscribe to route observer for navigation events
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      // Store the observer instance for later unsubscription
+      _routeObserver = ref.read(routeObserverProvider);
+      _routeObserver!.subscribe(this, route);
+    }
+    
+    // On first load or when returning to this screen
+    if (_isFirstLoad) {
+      _isFirstLoad = false;
+      _refreshApplicationStatus();
+    }
+  }
+  
+  // Called when the current route has been pushed and the navigator is now displaying this route
+  @override
+  void didPush() {
+    _refreshApplicationStatus();
+  }
+
+  // Called when this route is visible again after being covered by another route
+  @override
+  void didPopNext() {
+    _refreshApplicationStatus();
+  }
+  
+  void _refreshApplicationStatus() {
+    ref.invalidate(applicationStatusProvider);
+    log('Application status refreshed');
+  }
+  
+  @override
+  Widget build(BuildContext context) {
     final applicationState = ref.watch(applicationStatusProvider);
     log(applicationState.toString());
 
@@ -22,7 +95,11 @@ class ApplicationStatusScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Application Status'),
       ),
-      body: applicationState.when(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          _refreshApplicationStatus();
+        },
+        child: applicationState.when(
         data: (application) {
           if (application == null) {
             return Center(
@@ -66,26 +143,28 @@ class ApplicationStatusScreen extends ConsumerWidget {
             children: [
               _StatusCard(
                 title: 'Application ID',
-                content: application.id,
+                content: application.id.toUpperCase(),
                 icon: Icons.tag,
               ),
               const SizedBox(height: 16),
               _StatusCard(
                 title: 'Current Status',
-                content: application.status.toString().split('.').last,
+                content: application.status.toString().split('.').last.toUpperCase(),
                 icon: Icons.info_outline,
                 color: _getStatusColor(application.status),
               ),
               const SizedBox(height: 16),
               _StatusCard(
                 title: 'Submitted On',
-                content: application.submittedAt.toString(),
+                content: application.submittedAt != null 
+                  ? _formatDate(application.submittedAt!) 
+                  : 'Not available',
                 icon: Icons.calendar_today,
               ),
               const SizedBox(height: 16),
               _StatusCard(
                 title: 'Last Updated',
-                content: application.updatedAt.toString(),
+                content: _formatDate(application.updatedAt),
                 icon: Icons.update,
               ),
               if (application.comments?.isNotEmpty ?? false) ...[
@@ -176,7 +255,25 @@ class ApplicationStatusScreen extends ConsumerWidget {
           );
         },
       ),
+      ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    // Format: DD MMM YYYY, hh:mm a (e.g., 13 Sep 2025, 02:30 PM)
+    final day = date.day.toString().padLeft(2, '0');
+    final month = _getMonthName(date.month);
+    final year = date.year;
+    final hour = date.hour > 12 ? date.hour - 12 : date.hour == 0 ? 12 : date.hour;
+    final minute = date.minute.toString().padLeft(2, '0');
+    final period = date.hour >= 12 ? 'PM' : 'AM';
+    
+    return '$day $month $year, ${hour.toString().padLeft(2, '0')}:$minute $period';
+  }
+  
+  String _getMonthName(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
   }
 
   Color _getStatusColor(ApplicationStatus status) {
