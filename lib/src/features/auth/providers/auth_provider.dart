@@ -91,6 +91,21 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthState>> {
     }
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final authRepository = await _ref.read(authRepositoryProvider.future);
+      await authRepository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+    } catch (e) {
+      throw Exception('Failed to change password: ${e.toString()}');
+    }
+  }
+
   Future<void> logout() async {
     await _storage.delete(key: AppKeys.authToken);
     state = const AsyncValue.data(AuthState());

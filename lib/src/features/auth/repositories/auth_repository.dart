@@ -118,6 +118,42 @@ class AuthRepository {
     }
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await _dio.patch(ApiEndpoints.changePassword, data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
+
+      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+        // Check if response has data and follows BaseResponse format
+        if (response.data is Map<String, dynamic>) {
+          final responseData = response.data as Map<String, dynamic>;
+          
+          // If it follows BaseResponse format, check success field
+          if (responseData.containsKey('success')) {
+            final success = responseData['success'] as bool?;
+            if (success == false) {
+              final message = responseData['message'] as String? ?? 'Password change failed';
+              throw Exception(message);
+            }
+          }
+          // If no success field or success is true, consider it successful
+        }
+        // If response.data is not a Map or is null, consider it successful (some APIs return empty response)
+        return;
+      } else {
+        // Handle non-2xx status codes
+        throw Exception('Password change failed');
+      }
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   String _handleError(DioException e) {
     if (e.response != null) {
       final data = e.response!.data;
