@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sl_nic_bridge/src/features/application/screens/form_type_selection_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
+import '../../features/application/providers/application_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/application/screens/dashboard_screen.dart';
@@ -14,16 +15,19 @@ import '../../features/settings/screens/edit_profile_screen.dart';
 import '../../features/settings/screens/change_password_screen.dart';
 import '../../shared/screens/splash_screen.dart';
 import '../constants/app_routes.dart';
+import 'route_observer.dart';
 
 // Alternative approach: Use a router notifier for better control
 final appRouterProvider = Provider<GoRouter>((ref) {
   final notifier = RouterNotifier(ref);
+  final observer = ref.watch(routeObserverProvider);
   
   return GoRouter(
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
     refreshListenable: notifier,
     redirect: notifier.redirect,
+    observers: [observer],
     routes: [
       GoRoute(
         path: AppRoutes.splash,
@@ -81,6 +85,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
+  String? _previousLocation;
   
   RouterNotifier(this._ref) {
     // Listen to auth changes and notify router to refresh
@@ -91,6 +96,16 @@ class RouterNotifier extends ChangeNotifier {
   
   String? redirect(BuildContext context, GoRouterState state) {
     final authStateAsync = _ref.read(authStateProvider);
+    final currentLocation = state.matchedLocation;
+    
+    // Check if we're navigating to dashboard and refresh application status
+    if (currentLocation == AppRoutes.dashboard && _previousLocation != AppRoutes.dashboard) {
+      // Refresh application status when navigating to dashboard
+      _ref.invalidate(applicationStatusProvider);
+    }
+    
+    // Update previous location for next comparison
+    _previousLocation = currentLocation;
     
     // Show splash while loading
     if (authStateAsync.isLoading) {
@@ -103,7 +118,6 @@ class RouterNotifier extends ChangeNotifier {
     }
     
     final isLoggedIn = authStateAsync.value?.isAuthenticated ?? false;
-    final currentLocation = state.matchedLocation;
     
     final isAuthRoute = currentLocation == AppRoutes.login || 
                        currentLocation == AppRoutes.register;
