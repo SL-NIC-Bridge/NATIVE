@@ -14,8 +14,8 @@ class ApiEndpoints {
   static const String forgotPassword = '$auth/forgot-password';
   static const String resetPassword = '$auth/reset-password';
   static const String changePassword = '$auth/change-password';
-  static const String profile = '$auth/profile';
-  static const String updateProfile = '$auth/profile';
+  static const String profile = '$auth/me';
+  static const String updateProfile = '$auth/me';
   
   // Application endpoints
   static const String submitApplication = '$applications';
