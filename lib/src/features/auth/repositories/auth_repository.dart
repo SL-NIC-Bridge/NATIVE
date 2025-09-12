@@ -154,6 +154,51 @@ class AuthRepository {
     }
   }
 
+  Future<User> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? phone,
+    String? divisionId,
+  }) async {
+    try {
+      final Map<String, dynamic> data = {};
+      
+      if (firstName != null) data['firstName'] = firstName;
+      if (lastName != null) data['lastName'] = lastName;
+      if (email != null) data['email'] = email;
+      if (phone != null) data['phone'] = phone;
+      if (divisionId != null) data['divisionId'] = divisionId;
+
+      final response = await _dio.patch(ApiEndpoints.updateProfile, data: data);
+
+      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+        // Check if response has data and follows BaseResponse format
+        if (response.data is Map<String, dynamic>) {
+          final responseData = response.data as Map<String, dynamic>;
+          
+          // If it follows BaseResponse format, check success field
+          if (responseData.containsKey('success')) {
+            final success = responseData['success'] as bool?;
+            if (success == false) {
+              final message = responseData['message'] as String? ?? 'Profile update failed';
+              throw Exception(message);
+            }
+            return User.fromJson(responseData['data'] ?? {});
+          }
+          // If no success field or success is true, consider it successful
+        }
+        // If response.data is not a Map or is null, consider it successful (some APIs return empty response)
+        return User.fromJson({}); // Return an empty user or handle accordingly
+      } else {
+        // Handle non-2xx status codes
+        throw Exception('Profile update failed');
+      }
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   String _handleError(DioException e) {
     if (e.response != null) {
       final data = e.response!.data;
