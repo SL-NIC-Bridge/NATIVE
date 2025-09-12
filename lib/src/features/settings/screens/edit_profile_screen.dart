@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sl_nic_bridge/src/core/constants/app_routes.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -63,6 +65,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           ),
         );
         Navigator.of(context).pop();
+        context.go(AppRoutes.dashboard); // Navigate to dashboard screen
       }
     } catch (e) {
       if (mounted) {
