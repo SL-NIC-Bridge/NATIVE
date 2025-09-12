@@ -5,14 +5,86 @@ import 'package:sl_nic_bridge/src/features/application/models/application_model.
 import '../../auth/providers/auth_provider.dart';
 import '../providers/application_provider.dart';
 import '../../../core/constants/app_routes.dart';
+import '../../../core/router/route_observer.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../widgets/application_status_card.dart';
 
-class DashboardScreen extends ConsumerWidget {
+// Use a ConsumerStatefulWidget for dashboard
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> with WidgetsBindingObserver, RouteAware {
+  bool _isFirstLoad = true;
+  RouteObserver<PageRoute>? _routeObserver;
+
+  @override
+  void initState() {
+    super.initState();
+    // Register for lifecycle events
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    // Unregister from lifecycle events
+    WidgetsBinding.instance.removeObserver(this);
+    // Unsubscribe from route observer if we were subscribed
+    if (_routeObserver != null) {
+      _routeObserver!.unsubscribe(this);
+    }
+    super.dispose();
+  }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Refresh when app is resumed from background
+    if (state == AppLifecycleState.resumed) {
+      _refreshApplicationStatus();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Subscribe to route observer for navigation events
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      // Store the observer instance for later unsubscription
+      _routeObserver = ref.read(routeObserverProvider);
+      _routeObserver!.subscribe(this, route);
+    }
+    
+    // Refresh on first load
+    if (_isFirstLoad) {
+      _isFirstLoad = false;
+      _refreshApplicationStatus();
+    }
+  }
+  
+  // Called when the current route has been pushed and the navigator is now displaying this route
+  @override
+  void didPush() {
+    _refreshApplicationStatus();
+  }
+
+  // Called when this route is visible again after being covered by another route
+  @override
+  void didPopNext() {
+    _refreshApplicationStatus();
+  }
+  
+  void _refreshApplicationStatus() {
+    // Refresh application status data
+    ref.invalidate(applicationStatusProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final applicationState = ref.watch(applicationStatusProvider);
 
@@ -28,7 +100,7 @@ class DashboardScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(applicationStatusProvider);
+          _refreshApplicationStatus();
         },
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -149,7 +221,7 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 16),
                         CustomButton(
-                          onPressed: () => ref.invalidate(applicationStatusProvider),
+                          onPressed: () => _refreshApplicationStatus(),
                           text: 'Retry',
                           type: ButtonType.secondary,
                         ),
