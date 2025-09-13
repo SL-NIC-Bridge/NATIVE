@@ -303,6 +303,23 @@
                 "maxSize": 5242880
             },
             "validationRules": []
+        },
+        "studioDocument":
+        {
+            "fieldId": "studioDocument",
+            "type": "file",
+            "label": "Upload Studio Document",
+            "placeholder": "Upload your Studio Document",
+            "required": true,
+            "properties": {
+                "allowedTypes": [
+                    "image/jpeg",
+                    "image/png",
+                    "application/pdf"
+                ],
+                "maxSize": 5242880
+            },
+            "validationRules": []
         }
     },
     "ocrConfigurations": {
@@ -873,6 +890,9 @@
                     "description": "Review and submit your application",
                     "fields": [
                         {
+                            "$ref": "#/commonFields/studioDocument"
+                        },
+                        {
                             "$ref": "#/commonFields/receiptNumber"
                         },
                         {
@@ -1067,6 +1087,9 @@
                     "title": "Declaration & Payment",
                     "description": "Review and submit your application",
                     "fields": [
+                        {
+                            "$ref": "#/commonFields/studioDocument"
+                        },
                         {
                             "$ref": "#/commonFields/receiptNumber"
                         },
@@ -1333,6 +1356,9 @@
                     "title": "Declaration & Payment",
                     "description": "Review and submit your application",
                     "fields": [
+                        {
+                            "$ref": "#/commonFields/studioDocument"
+                        },
                         {
                             "$ref": "#/commonFields/receiptNumber"
                         },
