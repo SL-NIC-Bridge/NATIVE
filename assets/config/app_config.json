@@ -1,5 +1,5 @@
 {
-  "apiBaseUrl": "http://nic-api-tqchq8-d71d55-88-222-244-125.traefik.me/api/v1",
+  "apiBaseUrl": "http://10.0.2.2:3000/api/v1",
   "jwtStorageKey": "sl_nic_bridge_auth_token",
   "theme": {
     "seedColorLight": "#16b88f",
